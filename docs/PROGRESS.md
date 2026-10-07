@@ -31,3 +31,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **027 — enforce run resource budgets:** Behavioral verification rejects action overflow and expired deadlines; adapters share per-run request/action/check counters.
 - **028 — standardize explicit adapter interface:** Existing command adapter resolves; unknown adapters block; protocol and context contract documented without arbitrary plugin imports.
 - **029 — continue independent checks through runtime blocks:** Real subprocess integration confirms missing executable blocks dependents while an independent check executes; empty profiles remain non-green; checkpoints persist.
+- **030 — verify complete execution and reporting pipeline:** Real local HTTP target returns a seeded mismatch; pipeline executes, retries, exits 1 and preserves expected/actual evidence tied to its unique run.
