@@ -120,7 +120,10 @@ def handler_for(state):
                         return self.respond(422, {"error": "invalid item"})
                     key = self.headers.get("Idempotency-Key")
                     if key and (user, key) in state.idempotency:
-                        return self.respond(200, state.idempotency[(user, key)])
+                        previous = state.idempotency[(user, key)]
+                        if previous["name"] != name or previous["quantity"] != quantity:
+                            return self.respond(409, {"error": "idempotency conflict"})
+                        return self.respond(200, previous)
                     item = {"id": state.next_id, "owner": user, "name": name, "quantity": quantity}
                     state.next_id += 1
                     state.items[item["id"]] = item

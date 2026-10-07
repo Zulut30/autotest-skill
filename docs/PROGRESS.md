@@ -39,3 +39,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **035 — verify ownership and role matrix:** 7 real HTTP cases cover own/foreign reads, administrative access and unauthenticated denial without private object content.
 - **036 — verify API validation boundaries:** 9 real HTTP cases reject empty, oversized, negative, excessive, boolean and incorrectly typed input without state mutation.
 - **037 — verify persisted multi-step business flow:** Create, reopen, list and second-account isolation execute against the HTTP target and confirm persisted domain fields.
+- **038 — verify concurrent requests and idempotency:** 10 concurrent HTTP requests create exactly one item; reuse of an idempotency key with a changed payload is rejected.
