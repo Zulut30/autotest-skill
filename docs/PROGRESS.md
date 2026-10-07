@@ -17,3 +17,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **013 — pin Python dependencies:** uv lock resolved pyproject.toml into uv.lock; optional adapters remain separately installable.
 - **014 — add repeatable frozen installation:** scripts/install.sh ran twice successfully; package and browser/Telegram dependencies imported.
 - **015 — add runtime capability diagnosis:** Core dependencies import; real Chromium launches, renders and clicks a button. Writable uv cache fallback fixes cloud cache restriction; optional missing tools are explicit.
+- **016 — define and exercise CLI surface:** Root/run help and real browser doctor executed; unavailable handlers explicitly exit blocked instead of passing.
