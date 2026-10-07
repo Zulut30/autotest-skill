@@ -27,3 +27,13 @@ def test_buttons_callback_ack_tampering_and_stale_confirmation(tmp_path):
     assert len(answers)==3
     assert len(actual['items'])==1
     assert actual['states']['user_a'] is None
+
+
+def test_conversation_completion_invalid_input_and_cancel(tmp_path):
+    for scenario in ('dialog','invalid','cancel'):
+        report,_=run_config(bot_config(scenario),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0,scenario
+    events=[{'text':'/new'},{'text':'x'*101}]
+    report,_=run_config(bot_config('invalid',events=events),tmp_path,tmp_path/'runs')
+    assert report.exit_code()==0
+    assert report.results[0].actual['states']['user_a']=='Collect:name'

@@ -57,3 +57,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **053 — feed real aiogram updates through explicit recording transport:** Real aiogram FSM handles /new, name and callback; one item is saved and callback acknowledged. Recording transport closes and makes no Telegram requests.
 - **054 — verify bot commands and honest transport scope:** Real aiogram handlers process start/help/unknown commands through recording transport; report explicitly says live Telegram was not validated.
 - **055 — verify Telegram buttons callbacks and stale data:** Real aiogram callback handlers expose Confirm/Cancel, acknowledge three callbacks, reject tampered/stale actions and save exactly one item.
+- **056 — verify bot dialogue transitions and recovery:** Actual FSM completes confirmation, preserves input state on empty/oversized values and clears state/data on cancellation.
