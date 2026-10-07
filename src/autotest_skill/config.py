@@ -145,6 +145,7 @@ class AndroidSpec(StrictModel):
     apk: str | None = None
     udid: str = Field(min_length=1)
     reset: bool = True
+    reuse_runtime: bool = False
     package: str
     activity: str
     actions: list[AndroidAction] = Field(default_factory=list)
