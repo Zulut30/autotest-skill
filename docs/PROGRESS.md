@@ -20,3 +20,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **016 — define and exercise CLI surface:** Root/run help and real browser doctor executed; unavailable handlers explicitly exit blocked instead of passing.
 - **017 — validate bounded execution configuration:** Minimal YAML validates; 3 behavioral tests reject extra fields, unapproved targets, unsafe mutations, duplicate IDs and dependency cycles.
 - **018 — protect credential bindings and evidence:** 2 behavioral tests verify nested, free-text and bearer redaction before serialization and explicit missing-binding blocks.
+- **019 — isolate private current-run artifacts:** 2 behavioral tests verify unique run IDs, private file modes, redacted atomic output, and traversal/symlink rejection.
