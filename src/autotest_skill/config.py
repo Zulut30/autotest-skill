@@ -48,6 +48,7 @@ class HttpSpec(StrictModel):
     json_body: dict[str, Any] | None = None
     json_env: dict[str, str] = Field(default_factory=dict)
     capture: dict[str, str] = Field(default_factory=dict)
+    openapi_file: str | None = None
     timeout: float = Field(default=10, gt=0, le=120)
 
 

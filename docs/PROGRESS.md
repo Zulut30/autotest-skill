@@ -34,3 +34,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **030 — verify complete execution and reporting pipeline:** Real local HTTP target returns a seeded mismatch; pipeline executes, retries, exits 1 and preserves expected/actual evidence tied to its unique run.
 - **031 — create isolated API demonstration target:** Real HTTP integration verifies readiness, login, ownership denial, persisted creation and fresh state in a new fixture instance.
 - **032 — exercise HTTP assertions and ephemeral authentication:** Real healthy and defective API runs verify login captures, profile identity, ownership denial, seeded IDOR detection and token-free artifacts.
+- **033 — validate local OpenAPI response contracts:** A real HTTP 200 passes its original schema and fails after a seeded response-type regression; remote contract references cannot fetch arbitrary URLs.

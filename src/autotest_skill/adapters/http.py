@@ -58,6 +58,11 @@ def run(check, context):
         matches = matches and subset(spec.expected_json, payload)
     if spec.expected_text is not None:
         matches = matches and spec.expected_text in text
+    contract_errors = []
+    if spec.openapi_file:
+        from ..contracts import response_errors
+        contract_errors = response_errors(context.root, spec.openapi_file, spec.path, spec.method, status_code, payload)
+        matches = matches and not contract_errors
     if matches:
         for name, path in spec.capture.items():
             try:
@@ -71,6 +76,6 @@ def run(check, context):
     expected = {"status": spec.expected_status, "json": spec.expected_json, "text": spec.expected_text}
     artifact = f"{check.id}.http.json"
     write_json(context.folder, artifact, {"url": url, "method": spec.method, "expected": expected,
-               "actual": actual}, context.redactor)
+               "actual": actual, "contract_errors": contract_errors}, context.redactor)
     return context.result(check, "passed" if matches else "failed", expected=expected, actual=actual,
                           reason="" if matches else "HTTP response does not satisfy the declared oracle", evidence=[artifact])
