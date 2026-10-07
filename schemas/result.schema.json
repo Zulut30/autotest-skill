@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "CheckResult": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "blocked",
+            "skipped",
+            "error",
+            "observation"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "oracle": {
+          "title": "Oracle",
+          "type": "string"
+        },
+        "requirement": {
+          "title": "Requirement",
+          "type": "string"
+        },
+        "severity": {
+          "default": "medium",
+          "title": "Severity",
+          "type": "string"
+        },
+        "elapsed_ms": {
+          "default": 0,
+          "title": "Elapsed Ms",
+          "type": "number"
+        },
+        "expected": {
+          "default": null,
+          "title": "Expected"
+        },
+        "actual": {
+          "default": null,
+          "title": "Actual"
+        },
+        "reason": {
+          "default": "",
+          "title": "Reason",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "attempts": {
+          "items": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "title": "Attempts",
+          "type": "array"
+        },
+        "flaky": {
+          "default": false,
+          "title": "Flaky",
+          "type": "boolean"
+        },
+        "test_counts": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Test Counts",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "status",
+        "oracle",
+        "requirement"
+      ],
+      "title": "CheckResult",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": 1,
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "project": {
+      "title": "Project",
+      "type": "string"
+    },
+    "profile": {
+      "title": "Profile",
+      "type": "string"
+    },
+    "tool_version": {
+      "title": "Tool Version",
+      "type": "string"
+    },
+    "started_at": {
+      "title": "Started At",
+      "type": "string"
+    },
+    "finished_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Finished At"
+    },
+    "target_revision": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Revision"
+    },
+    "config_digest": {
+      "title": "Config Digest",
+      "type": "string"
+    },
+    "results": {
+      "items": {
+        "$ref": "#/$defs/CheckResult"
+      },
+      "title": "Results",
+      "type": "array"
+    },
+    "interrupted": {
+      "default": false,
+      "title": "Interrupted",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "run_id",
+    "project",
+    "profile",
+    "tool_version",
+    "started_at",
+    "config_digest"
+  ],
+  "title": "RunReport",
+  "type": "object"
+}
