@@ -108,10 +108,23 @@ class WebSpec(StrictModel):
         return self
 
 
+class TelegramEvent(StrictModel):
+    kind: Literal["message", "callback"] = "message"
+    text: str | None = Field(default=None,max_length=1000)
+    callback: str | None = Field(default=None,max_length=64)
+    user_id: int = Field(default=501,gt=0)
+    chat_id: int | None = None
+    update_id: int | None = Field(default=None,ge=1)
+
+
 class TelegramSpec(StrictModel):
     mode: Literal["local", "live"] = "local"
     scenario: Literal["start", "dialog", "invalid", "cancel", "callback", "isolation", "duplicate", "delivery"] = "start"
     bot_username: str | None = None
+    factory: str = "autotest_skill.telegram_demo:create_dispatcher"
+    events: list[TelegramEvent] = Field(default_factory=list,max_length=100)
+    expected_messages: list[str] = Field(default_factory=list)
+    defects: bool = False
     expected_text: str | None = None
     timeout: float = Field(default=20, gt=0, le=120)
 
@@ -205,6 +218,9 @@ class Config(StrictModel):
                 raise ValueError("Mutating HTTP methods must be declared")
             if check.kind == "web" and any(a.action in {"fill", "click", "double_click", "press"} and not a.safe_read_only for a in spec.actions) and not check.mutating:
                 raise ValueError("Interactive browser actions must declare mutation or read-only intent")
+            if check.kind == "telegram" and spec.factory != "autotest_skill.telegram_demo:create_dispatcher":
+                if not self.allow_project_commands or not spec.events or not spec.expected_messages:
+                    raise ValueError("Custom bot imports require command permission, events and expected replies")
             for field in ("base_url", "server_url"):
                 value = getattr(spec, field, None)
                 if value and origin(value) not in self.allowed_origins:
