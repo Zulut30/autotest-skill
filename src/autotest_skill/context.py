@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from .results import CheckResult
 from .secrets import Redactor
+from .errors import BudgetExceeded
 
 
 @dataclass
@@ -16,8 +17,20 @@ class Context:
     variables: dict = field(default_factory=dict)
     started: float = field(default_factory=time.monotonic)
 
+    counters: dict = field(default_factory=lambda: {"checks": 0, "actions": 0, "requests": 0})
+
     def remaining(self):
-        return max(0.001, self.config.budgets.seconds - (time.monotonic() - self.started))
+        remaining = self.config.budgets.seconds - (time.monotonic() - self.started)
+        if remaining <= 0:
+            raise BudgetExceeded("Run time budget exhausted")
+        return remaining
+
+    def consume(self, resource, amount=1):
+        self.remaining()
+        maximum = getattr(self.config.budgets, "max_" + resource)
+        if self.counters[resource] + amount > maximum:
+            raise BudgetExceeded(f"Run {resource} budget exhausted")
+        self.counters[resource] += amount
 
     def result(self, check, status, **details):
         return CheckResult(id=check.id, kind=check.kind, status=status, oracle=check.oracle,

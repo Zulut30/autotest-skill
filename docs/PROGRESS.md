@@ -28,3 +28,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **024 — require traceable test expectations:** Every check requires a requirement and oracle; behavioral validation rejects undocumented checks; references/oracles.md explains sources and assumptions.
 - **025 — plan checks with prerequisite closure:** CLI plan executes; test proves dependencies precede consumers even when the dependency is outside the requested profile.
 - **026 — select checks by changed paths:** Behavioral tests cover targeted selection, prerequisite closure and smoke fallback when changes are absent or unmapped.
+- **027 — enforce run resource budgets:** Behavioral verification rejects action overflow and expired deadlines; adapters share per-run request/action/check counters.
