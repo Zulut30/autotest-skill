@@ -3,3 +3,4 @@
 Each entry records a completed roadmap step. Unchecked steps remain unverified.
 
 - **001 — define product problem:** docs/PRODUCT.md defines target defects, evidence requirements and product boundaries.
+- **002 — define first users:** docs/AUDIENCE.md records the completed requirement and acceptance contract.
