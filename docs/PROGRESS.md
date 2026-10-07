@@ -24,3 +24,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **020 — publish versioned honest result contract:** Result JSON schema generated; tests prove zero checks, blocks, errors and flaky retries cannot become green validation.
 - **021 — write evidence-driven agent skill:** SKILL.md defines discovery, explicit oracles, bounded execution, honest results, existing-checkout policy and permission boundaries.
 - **022 — discover repository workflows safely:** Actual checkout discovery identifies manifests/tests; behavioral test verifies script discovery without execution or secret-file disclosure.
+- **023 — execute repository suites with honest outcomes:** 3 integration tests run real child pytest processes: mixed pass/fail/skip, zero tests, and secret-safe evidence; original exits preserved.
