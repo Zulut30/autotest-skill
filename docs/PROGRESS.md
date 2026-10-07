@@ -53,3 +53,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **049 — verify accessibility with trusted axe and keyboard flow:** Verified npm SHA-512 integrity before vendoring axe-core; Chromium finds an unlabeled seeded control, clean WCAG-tagged scan passes, and keyboard Enter completes sign-in.
 - **050 — separate UX observations from functional defects:** Real clean/seeded browser controls prove placeholder findings remain reviewable observations; validated web configuration and screenshot/privacy guide added.
 - **051 — select aiogram handler and Telethon client adapters:** Pinned aiogram/Telethon import; real Dispatcher/Router/FSM instantiate; docs distinguish local transport, live prerequisites and unsupported media.
+- **052 — create aiogram conversation demonstration target:** Real dispatcher factory contains commands, FSM, inline buttons, roles and bounded deduplication; new factories own independent storage/data.
