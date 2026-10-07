@@ -11,3 +11,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **007 — define test action boundaries:** docs/SAFETY.md records the completed requirement and acceptance contract.
 - **008 — define quality measurements:** docs/QUALITY.md records the completed requirement and acceptance contract.
 - **009 — set measurable release gates:** docs/RELEASE-GATES.md records the completed requirement and acceptance contract.
+- **010 — record execution dependencies:** docs/TASKS.md records the completed requirement and acceptance contract.
