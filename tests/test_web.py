@@ -165,3 +165,16 @@ def test_ux_findings_are_observations_not_confirmed_defects(tmp_path):
         assert broken.results[0].status=='observation'
         assert 'failed' not in broken.counts()
         assert all(not item['confirmed_defect'] for item in broken.results[0].actual['ux_observations'])
+
+
+def test_navigation_and_semantic_action_timings_are_real(tmp_path):
+    actions=[{'action':'click','role':'button','name':'Sign in'}, {'action':'expect_text','text':'Signed in as alice'}]
+    with start_demo() as (base,_):
+        report,_=run_config(web_config(base,actions,measure_performance=True,max_navigation_ms=30000,max_action_ms=30000),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0
+        actual=report.results[0].actual
+        assert actual['navigation_ms']>0 and actual['navigation_timing']['load_ms']>0
+        assert len(actual['action_timings'])==2 and actual['action_timings'][0]['elapsed_ms']>0
+        assert actual['performance_conditions']['headless'] is True
+        failure,_=run_config(web_config(base,measure_performance=True,max_navigation_ms=.00001),tmp_path,tmp_path/'runs')
+        assert failure.results[0].status=='failed'

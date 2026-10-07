@@ -92,6 +92,9 @@ class WebSpec(StrictModel):
     viewport: list[int] = Field(default_factory=lambda: [1280, 800], min_length=2, max_length=2)
     timeout: float = Field(default=15, gt=0, le=120)
     check_console: bool = True
+    measure_performance: bool = False
+    max_navigation_ms: float | None = Field(default=None,gt=0)
+    max_action_ms: float | None = Field(default=None,gt=0)
     allowed_http_errors: dict[str, list[int]] = Field(default_factory=dict)
     accessibility: bool = False
     check_layout: bool = False

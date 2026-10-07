@@ -2,6 +2,7 @@
 
 import os
 import sys
+import time
 from urllib.parse import urlsplit
 from ..artifacts import safe_file, write_json
 from ..doctor import browser_path
@@ -27,7 +28,7 @@ def run(check, context):
     spec = check.spec
     url = request_url(context.config, spec.base_url, spec.path)
     errors, denied, http_errors, expected_http_errors, evidence = [], [], [], [], []
-    actual = {}
+    actual = {"action_timings": []}
     console_records = []
     def unexpected_console():
         return [record for record in console_records if not (
@@ -70,12 +71,19 @@ def run(check, context):
         page.set_default_timeout(min(spec.timeout, context.remaining()) * 1000)
         try:
             context.consume("actions")
+            navigation_started = time.monotonic()
             response = page.goto(url, wait_until="domcontentloaded", timeout=min(spec.timeout, context.remaining()) * 1000)
             actual["navigation_status"] = response.status if response else None
+            if spec.measure_performance:
+                page.wait_for_load_state("load",timeout=min(spec.timeout, context.remaining()) * 1000)
+                actual["navigation_ms"] = (time.monotonic()-navigation_started)*1000
+                actual["navigation_timing"] = page.evaluate("() => {const n=performance.getEntriesByType('navigation')[0];return n?{dom_content_loaded_ms:n.domContentLoadedEventEnd,load_ms:n.loadEventEnd}:null}")
+                actual["performance_conditions"] = {"browser":browser.version,"viewport":spec.viewport,"headless":True,"locale":"en-US","platform":sys.platform,"cpu_throttling":False,"network_throttling":False,"scope":"Lab run, not field Core Web Vitals"}
             for index, action in enumerate(spec.actions):
                 context.consume("actions")
                 page.set_default_timeout(min(spec.timeout, context.remaining()) * 1000)
                 actual["last_action"] = index
+                action_started = time.monotonic()
                 value = context.redactor.binding(action.value_env) if action.value_env else action.value
                 if action.action == "goto":
                     page.goto(request_url(context.config, spec.base_url, action.path or "/"), wait_until="domcontentloaded")
@@ -99,6 +107,12 @@ def run(check, context):
                         expect(target).to_be_visible()
                         if value is not None: expect(target).to_have_text(value)
                     elif action.action == "expect_visible": expect(target).to_be_visible()
+                if spec.measure_performance:
+                    actual["action_timings"].append({"index":index,"action":action.action,"elapsed_ms":(time.monotonic()-action_started)*1000})
+            if spec.max_navigation_ms is not None and actual.get("navigation_ms",0)>spec.max_navigation_ms:
+                status,reason="failed","Navigation exceeds the configured laboratory threshold"
+            if spec.max_action_ms is not None and any(a["elapsed_ms"]>spec.max_action_ms for a in actual["action_timings"]):
+                status,reason="failed","Semantic action exceeds the configured laboratory threshold"
             for text in spec.expected_text:
                 expect(page.get_by_text(text, exact=True)).to_be_visible(timeout=min(spec.timeout, context.remaining()) * 1000)
             if spec.ux:
