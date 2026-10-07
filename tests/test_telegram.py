@@ -75,3 +75,12 @@ def test_real_webhook_http_ingress_authenticates_and_deduplicates():
             assert client.post('/webhook',json=payload,headers=headers).json()['ok'] is True
             assert client.post('/webhook',json=payload,headers=headers).status_code==200
             assert len(session.calls)==1
+
+
+def test_missing_live_credentials_block_without_claiming_validation(tmp_path,monkeypatch):
+    for name in ('TG_BOT_TOKEN','TG_API_ID','TG_API_HASH','TG_SESSION'):
+        monkeypatch.delenv(name,raising=False)
+    report,_=run_config(bot_config('dialog',mode='live',serve_fixture=True),tmp_path,tmp_path/'runs')
+    assert report.results[0].status=='blocked'
+    assert 'TG_BOT_TOKEN' in report.results[0].reason
+    assert report.exit_code()==2

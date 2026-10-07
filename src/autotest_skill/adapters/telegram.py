@@ -87,7 +87,6 @@ async def local(check,context):
 
 def run(check,context):
     if check.spec.mode=='live':
-        for name in ('TG_BOT_TOKEN','TG_API_ID','TG_API_HASH','TG_SESSION'):
-            context.redactor.binding(name)
-        raise Blocked('Live-client implementation requires a configured test bot and runnable Telegram protocol route')
+        from ..telegram_live import run_live
+        return asyncio.run(asyncio.wait_for(run_live(check,context),timeout=min(check.spec.timeout,context.remaining())))
     return asyncio.run(asyncio.wait_for(local(check,context),timeout=min(check.spec.timeout,context.remaining())))

@@ -1,0 +1,17 @@
+version: 1
+project: dedicated-live-telegram-demo
+project_root: ..
+budgets: {seconds: 90}
+checks:
+  - id: telegram.live-dialog
+    kind: telegram
+    mutating: true
+    requirement: TG-DIALOG through genuine Telegram client
+    oracle: A real test user completes name entry and confirms exactly the expected saved reply.
+    spec:
+      mode: live
+      scenario: dialog
+      serve_fixture: true
+      timeout: 60
+      expected_messages: [Saved item: Widget]
+allow_mutations: true

@@ -125,12 +125,15 @@ class TelegramSpec(StrictModel):
     events: list[TelegramEvent] = Field(default_factory=list,max_length=100)
     expected_messages: list[str] = Field(default_factory=list)
     defects: bool = False
+    serve_fixture: bool = False
     expected_text: str | None = None
     timeout: float = Field(default=20, gt=0, le=120)
 
 
 class AndroidAction(StrictModel):
-    action: Literal["click", "fill", "expect_text", "back", "background", "screenshot"]
+    enabled: bool | None = None
+    value_env: str | None = None
+    action: Literal["click", "fill", "expect_text", "expect_visible", "back", "background", "screenshot", "restart", "set_network"]
     accessibility_id: str | None = None
     resource_id: str | None = None
     text: str | None = None
@@ -140,11 +143,15 @@ class AndroidAction(StrictModel):
 class AndroidSpec(StrictModel):
     server_url: str = "http://127.0.0.1:4723"
     apk: str | None = None
+    udid: str = Field(min_length=1)
+    reset: bool = True
     package: str
     activity: str
     actions: list[AndroidAction] = Field(default_factory=list)
     timeout: float = Field(default=30, gt=0, le=300)
     device_name: str = "Android"
+    baseline: str | None = None
+    visual_threshold: float = Field(default=0.01,ge=0,le=1)
 
 
 class PerformanceSpec(StrictModel):

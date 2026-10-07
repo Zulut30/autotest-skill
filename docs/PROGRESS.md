@@ -60,3 +60,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **056 — verify bot dialogue transitions and recovery:** Actual FSM completes confirmation, preserves input state on empty/oversized values and clears state/data on cancellation.
 - **057 — verify bot roles and user chat isolation:** Normal and admin commands obey roles; real FSM isolates users/chats, while intentionally shared storage is detected as a failure.
 - **058 — verify authenticated webhook ingress and duplicate updates:** Actual HTTP webhook checks secret-header denial and accepts one effect for repeated updates; real aiogram webhook entrypoint and recording transport remain explicitly local.
+- **061 — define explicit-device native adapter contract:** Native lifecycle/actions documented and schema rejects implicit device selection; supported platform and runtime processes are explicit.
