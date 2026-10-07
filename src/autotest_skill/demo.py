@@ -3,6 +3,7 @@
 import json
 import secrets
 import threading
+import time
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
@@ -40,7 +41,8 @@ def handler_for(state):
             self.wfile.write(content)
 
         def identity(self):
-            return state.sessions.get(self.headers.get("Authorization", "").removeprefix("Bearer "))
+            record = state.sessions.get(self.headers.get("Authorization", "").removeprefix("Bearer "))
+            return record["user"] if record and record["expires"] > time.monotonic() else None
 
         def body(self):
             length = int(self.headers.get("Content-Length", 0))
@@ -95,7 +97,7 @@ def handler_for(state):
                     if user not in {"alice", "bob", "admin"} or body.get("password") != "demo-password":
                         return self.respond(401, {"error": "invalid credentials"})
                     token = secrets.token_urlsafe(24)
-                    state.sessions[token] = user
+                    state.sessions[token] = {"user": user, "expires": time.monotonic() + 300}
                     return self.respond(200, {"authorization": "Bearer " + token, "username": user})
                 user = self.identity()
                 if not user:

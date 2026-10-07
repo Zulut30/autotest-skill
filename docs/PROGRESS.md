@@ -35,3 +35,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **031 — create isolated API demonstration target:** Real HTTP integration verifies readiness, login, ownership denial, persisted creation and fresh state in a new fixture instance.
 - **032 — exercise HTTP assertions and ephemeral authentication:** Real healthy and defective API runs verify login captures, profile identity, ownership denial, seeded IDOR detection and token-free artifacts.
 - **033 — validate local OpenAPI response contracts:** A real HTTP 200 passes its original schema and fails after a seeded response-type regression; remote contract references cannot fetch arbitrary URLs.
+- **034 — verify login logout and expired sessions:** 2 real HTTP scenarios cover wrong credentials, valid identity, revocation and expiry; fixture sessions now enforce expiry.
