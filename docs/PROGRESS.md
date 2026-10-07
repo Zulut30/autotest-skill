@@ -43,3 +43,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **039 — verify controlled dependency failure and recovery:** Real API responses switch from ready to 503 and recover; non-admin users cannot inject fixture failures.
 - **040 — verify repeatable test data cleanup:** The same create/reset flow runs three times with identical IDs; reset clears prior data and invalidates old sessions; backend guide documents external-target cleanup needs.
 - **041 — execute browser checks with private evidence:** Real Chromium opens the local application, verifies its heading and saves a masked private screenshot plus current-run browser metadata.
+- **042 — validate functional service readiness:** Real target health JSON and application content pass; an incorrect expected ready state blocks despite HTTP 200.
