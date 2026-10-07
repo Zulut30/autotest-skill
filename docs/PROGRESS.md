@@ -41,3 +41,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **037 — verify persisted multi-step business flow:** Create, reopen, list and second-account isolation execute against the HTTP target and confirm persisted domain fields.
 - **038 — verify concurrent requests and idempotency:** 10 concurrent HTTP requests create exactly one item; reuse of an idempotency key with a changed payload is rejected.
 - **039 — verify controlled dependency failure and recovery:** Real API responses switch from ready to 503 and recover; non-admin users cannot inject fixture failures.
+- **040 — verify repeatable test data cleanup:** The same create/reset flow runs three times with identical IDs; reset clears prior data and invalidates old sessions; backend guide documents external-target cleanup needs.
