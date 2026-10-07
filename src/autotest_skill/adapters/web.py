@@ -25,8 +25,6 @@ def locate(page, action):
 def run(check, context):
     from playwright.sync_api import sync_playwright, expect, TimeoutError as BrowserTimeout
     spec = check.spec
-    if spec.accessibility:
-        raise Blocked("Requested extended browser capability is not installed in this build")
     url = request_url(context.config, spec.base_url, spec.path)
     errors, denied, http_errors, expected_http_errors, evidence = [], [], [], [], []
     actual = {}
@@ -103,6 +101,11 @@ def run(check, context):
                     elif action.action == "expect_visible": expect(target).to_be_visible()
             for text in spec.expected_text:
                 expect(page.get_by_text(text, exact=True)).to_be_visible(timeout=min(spec.timeout, context.remaining()) * 1000)
+            if spec.accessibility:
+                from ..accessibility import inspect
+                actual["accessibility"] = inspect(page)
+                if actual["accessibility"]["violations"]:
+                    status, reason = "failed", "Automated accessibility violations were found"
             if spec.check_layout:
                 actual["layout"] = page.evaluate('() => ({viewport:innerWidth,document:document.documentElement.scrollWidth})')
                 if actual["layout"]["document"] > actual["layout"]["viewport"]:

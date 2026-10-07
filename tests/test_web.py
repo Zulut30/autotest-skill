@@ -136,3 +136,20 @@ def test_visual_comparison_preserves_approved_baseline(tmp_path):
         assert broken.results[0].status=='failed'
         assert broken.results[0].actual['visual']['difference_ratio']>.01
     assert (tmp_path/'approved.png').read_bytes()==before
+
+
+def test_axe_finds_seeded_missing_label_and_clean_control_passes(tmp_path):
+    with start_demo() as (base,_):
+        clean,_=run_config(web_config(base,accessibility=True),tmp_path,tmp_path/'runs')
+        assert clean.exit_code()==0, clean.results[0].actual
+    with start_demo(defects=True) as (base,_):
+        broken,_=run_config(web_config(base,accessibility=True),tmp_path,tmp_path/'runs')
+        assert broken.results[0].status=='failed'
+        assert any(v['id']=='label' for v in broken.results[0].actual['accessibility']['violations'])
+
+
+def test_keyboard_focus_reaches_and_activates_sign_in(tmp_path):
+    actions=[{'action':'press','label':'Password','value':'Enter'}, {'action':'expect_text','text':'Signed in as alice'}]
+    with start_demo() as (base,_):
+        report,_=run_config(web_config(base,actions),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0

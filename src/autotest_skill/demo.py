@@ -69,6 +69,7 @@ def handler_for(state):
                         html = page.read_text().replace("__DEFECTS__", str(state.defects).lower())
                         if state.defects:
                             html = html.replace("</head>", "<style>main{width:1800px;max-width:none}</style></head>")
+                            html = html.replace("<main>", '<main><input id="unlabeled">')
                         return self.respond(200, html, "text/html; charset=utf-8")
                     return self.respond(200, {"fixture": True, "ready": True})
                 user = self.identity()
