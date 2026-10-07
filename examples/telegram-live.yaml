@@ -13,5 +13,5 @@ checks:
       scenario: dialog
       serve_fixture: true
       timeout: 60
-      expected_messages: [Saved item: Widget]
+      expected_messages: ['Saved item: Widget']
 allow_mutations: true
