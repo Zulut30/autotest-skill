@@ -1,0 +1,11 @@
+rules:
+  - id: python-shell-execution
+    languages: [python]
+    message: Shell interpretation can execute untrusted input; review provenance or use argv without shell.
+    severity: ERROR
+    pattern: subprocess.$FUNC(..., shell=True, ...)
+  - id: python-dynamic-eval
+    languages: [python]
+    message: Dynamic eval may execute untrusted expressions; verify input provenance.
+    severity: ERROR
+    pattern: eval($EXPRESSION)

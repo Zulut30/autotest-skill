@@ -44,9 +44,9 @@ def scan(root,target,redactor):
     return {'findings':findings,'scanned_files':scanned,'excluded_entries':excluded,'scope':'Bounded source files; not Git history or ignored build dependencies'}
 
 
-def run_tool(argv,context,timeout,cwd=None):
+def run_tool(argv,context,timeout,cwd=None,env_extra=None):
     with tempfile.TemporaryFile() as stdout,tempfile.TemporaryFile() as stderr:
-        process=subprocess.Popen(argv,cwd=cwd or context.root,stdout=stdout,stderr=stderr,start_new_session=True)
+        process=subprocess.Popen(argv,cwd=cwd or context.root,stdout=stdout,stderr=stderr,start_new_session=True,env={**os.environ,**(env_extra or {})})
         try:code=process.wait(timeout=min(timeout,context.remaining()))
         except BaseException:
             os.killpg(process.pid,signal.SIGTERM)

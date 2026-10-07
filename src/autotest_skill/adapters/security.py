@@ -2,6 +2,7 @@
 
 import json
 import re
+from pathlib import Path
 from ..artifacts import safe_file,write_json
 from ..errors import Blocked
 from ..security_scan import scan,run_tool,dependency_findings
@@ -27,6 +28,27 @@ def run(check,context):
         except (ValueError,KeyError,TypeError) as exc:raise Blocked('Dependency audit returned an invalid result') from exc
         if actual['skipped_packages'] or not actual['audited_dependencies']:
             raise Blocked('Some pinned dependencies could not be audited')
+    elif spec.tool=='semgrep':
+        rules=Path(__file__).parents[1]/'assets'/'security'/'python.yaml'
+        code,payload=run_tool([binary('semgrep'),'scan','--config',str(rules),'--json','--error','--metrics','off',
+            '--disable-version-check','--no-git-ignore','--jobs','2',str(target)],context,spec.timeout,
+            env_extra={'SEMGREP_SETTINGS_FILE':str(context.folder/'semgrep-settings.yml'),'SEMGREP_LOG_FILE':str(context.folder/'semgrep.log')})
+        if code not in {0,1}:raise Blocked(f'Semgrep did not finish (exit {code})')
+        data=json.loads(payload)
+        if data.get('errors'):raise Blocked('Semgrep reported scan errors; source scope is incomplete')
+        scanned=data.get('paths',{}).get('scanned',[])
+        if not scanned:raise Blocked('No supported Python source was scanned')
+        findings=[{'rule':f['check_id'],'file':str(Path(f['path']).resolve().relative_to(context.root.resolve())),
+            'line':f['start']['line'],'classification':'potential_issue','applicability':f['extra']['message']} for f in data['results']]
+        actual={'findings':findings,'scanned_files':len(scanned),'scope':'Two local Python rules; metrics and registry access disabled'}
+    elif spec.tool=='gitleaks':
+        raw=safe_file(context.folder,f'{check.id}.gitleaks-raw.json')
+        code,_=run_tool([binary('gitleaks'),'dir',str(target),'--no-banner','--redact=100','--report-format','json','--report-path',str(raw)],context,spec.timeout)
+        if code not in {0,1} or not raw.is_file():raise Blocked(f'Gitleaks did not finish (exit {code})')
+        data=json.loads(raw.read_text());raw.unlink()
+        findings=[{'rule':f['RuleID'],'file':f['File'],'line':f['StartLine'],'classification':'potential_issue',
+            'applicability':'Credential pattern in working tree; verify active use. Value withheld.'} for f in data]
+        actual={'findings':findings,'scope':'Working tree patterns; excludes Git history and active credential validation'}
     else:raise Blocked('Requested security tool is not implemented yet')
     actual['tool']=spec.tool
     artifact=f'{check.id}.security.json';write_json(context.folder,artifact,actual,context.redactor)

@@ -36,3 +36,35 @@ def test_dependency_urls_are_not_executed(tmp_path):
     (tmp_path/'requirements.txt').write_text('danger @ https://example.com/file.whl\n')
     report,_=run_config(security_config('dependencies','requirements.txt'),tmp_path,tmp_path/'runs')
     assert report.results[0].status=='blocked'
+
+
+def test_real_semgrep_rules_and_clean_control(tmp_path):
+    import pytest
+    from autotest_skill.tooling import binary
+    from autotest_skill.errors import Blocked
+    try:binary('semgrep')
+    except Blocked:pytest.skip('Optional Semgrep installation required')
+    target=tmp_path/'app.py';target.write_text('import subprocess\nsubprocess.run(user_input, shell=True)\n')
+    report,_=run_config(security_config('semgrep','app.py'),tmp_path,tmp_path/'runs')
+    assert report.results[0].status=='failed',report.results[0].reason
+    assert report.results[0].actual['findings'][0]['line']==2
+    target.write_text('import subprocess\nsubprocess.run(["echo", "hello"], check=True)\n')
+    clean,_=run_config(security_config('semgrep','app.py'),tmp_path,tmp_path/'runs')
+    assert clean.exit_code()==0,clean.results[0].reason
+
+
+def test_real_gitleaks_redacts_control_and_clean_source_passes(tmp_path):
+    import pytest
+    from autotest_skill.tooling import binary
+    from autotest_skill.errors import Blocked
+    try:binary('gitleaks')
+    except Blocked:pytest.skip('Optional Gitleaks installation required')
+    source=tmp_path/'source';source.mkdir()
+    value='gh'+'p_'+secrets.token_hex(20)
+    target=source/'app.py';target.write_text('github_token = "'+value+'"\n')
+    report,folder=run_config(security_config('gitleaks','source'),tmp_path,tmp_path/'runs')
+    assert report.results[0].status=='failed',report.results[0].reason
+    assert value not in (folder/'result.json').read_text()
+    target.write_text('import os\ngithub_token = os.environ["GITHUB_TOKEN"]\n')
+    clean,_=run_config(security_config('gitleaks','source'),tmp_path,tmp_path/'runs')
+    assert clean.exit_code()==0,clean.results[0].reason
