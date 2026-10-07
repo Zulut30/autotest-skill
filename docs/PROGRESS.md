@@ -23,3 +23,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **019 — isolate private current-run artifacts:** 2 behavioral tests verify unique run IDs, private file modes, redacted atomic output, and traversal/symlink rejection.
 - **020 — publish versioned honest result contract:** Result JSON schema generated; tests prove zero checks, blocks, errors and flaky retries cannot become green validation.
 - **021 — write evidence-driven agent skill:** SKILL.md defines discovery, explicit oracles, bounded execution, honest results, existing-checkout policy and permission boundaries.
+- **022 — discover repository workflows safely:** Actual checkout discovery identifies manifests/tests; behavioral test verifies script discovery without execution or secret-file disclosure.
