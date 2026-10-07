@@ -54,3 +54,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **050 — separate UX observations from functional defects:** Real clean/seeded browser controls prove placeholder findings remain reviewable observations; validated web configuration and screenshot/privacy guide added.
 - **051 — select aiogram handler and Telethon client adapters:** Pinned aiogram/Telethon import; real Dispatcher/Router/FSM instantiate; docs distinguish local transport, live prerequisites and unsupported media.
 - **052 — create aiogram conversation demonstration target:** Real dispatcher factory contains commands, FSM, inline buttons, roles and bounded deduplication; new factories own independent storage/data.
+- **053 — feed real aiogram updates through explicit recording transport:** Real aiogram FSM handles /new, name and callback; one item is saved and callback acknowledged. Recording transport closes and makes no Telegram requests.
