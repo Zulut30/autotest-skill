@@ -15,3 +15,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **011 — choose execution architecture:** docs/ARCHITECTURE.md specifies Python, adapter isolation, deterministic execution and dependency strategy.
 - **012 — organize repository layout:** Package layout, ignored generated output and docs/REPOSITORY.md created.
 - **013 — pin Python dependencies:** uv lock resolved pyproject.toml into uv.lock; optional adapters remain separately installable.
+- **014 — add repeatable frozen installation:** scripts/install.sh ran twice successfully; package and browser/Telegram dependencies imported.
