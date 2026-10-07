@@ -74,6 +74,16 @@ class WebAction(StrictModel):
     safe_read_only: bool = False
 
 
+    @model_validator(mode="after")
+    def locator_contract(self):
+        if self.action in {"click", "fill", "press", "expect_text", "expect_visible"}:
+            if sum(bool(value) for value in (self.role,self.label,self.test_id,self.text)) != 1:
+                raise ValueError("An action needs exactly one semantic locator")
+        if self.value is not None and self.value_env is not None:
+            raise ValueError("Use one value source")
+        return self
+
+
 class WebSpec(StrictModel):
     base_url: str
     path: str = "/"

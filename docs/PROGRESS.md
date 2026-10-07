@@ -45,3 +45,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **041 — execute browser checks with private evidence:** Real Chromium opens the local application, verifies its heading and saves a masked private screenshot plus current-run browser metadata.
 - **042 — validate functional service readiness:** Real target health JSON and application content pass; an incorrect expected ready state blocks despite HTTP 200.
 - **043 — map interface within action boundaries:** Chromium inventories two forms and Save button, visits the allowed health link, and leaves sessions/data unchanged; unknown forms stay unsubmitted.
+- **044 — validate semantic browser locators:** Ambiguous button locator blocks without clicking; actions require one semantic locator and one value source; exact expected text is supported.

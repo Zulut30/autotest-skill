@@ -28,3 +28,11 @@ def test_bounded_interface_map_inventories_without_submitting(tmp_path):
         assert mapping['visited_pages'][0]['url'].endswith('/health')
         assert not state.sessions
         assert len(state.items) == 2
+
+
+def test_ambiguous_locator_blocks_before_clicking(tmp_path):
+    with start_demo() as (base,state):
+        report,_ = run_config(web_config(base,[{'action':'click','role':'button'}]),tmp_path,tmp_path/'runs')
+        assert report.results[0].status == 'blocked'
+        assert 'ambiguous' in report.results[0].reason
+        assert not state.sessions

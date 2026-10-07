@@ -79,10 +79,14 @@ def run(check, context):
                     pass
                 else:
                     target = locate(page, action)
+                    if target.count() > 1:
+                        raise Blocked("Configured semantic locator is ambiguous")
                     if action.action == "click": target.click()
                     elif action.action == "fill": target.fill(value or "")
                     elif action.action == "press": target.press(value or "Enter")
-                    elif action.action == "expect_text": expect(target).to_be_visible()
+                    elif action.action == "expect_text":
+                        expect(target).to_be_visible()
+                        if value is not None: expect(target).to_have_text(value)
                     elif action.action == "expect_visible": expect(target).to_be_visible()
             for text in spec.expected_text:
                 expect(page.get_by_text(text, exact=True)).to_be_visible(timeout=min(spec.timeout, context.remaining()) * 1000)
