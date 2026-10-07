@@ -14,3 +14,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **010 — record execution dependencies:** docs/TASKS.md records the completed requirement and acceptance contract.
 - **011 — choose execution architecture:** docs/ARCHITECTURE.md specifies Python, adapter isolation, deterministic execution and dependency strategy.
 - **012 — organize repository layout:** Package layout, ignored generated output and docs/REPOSITORY.md created.
+- **013 — pin Python dependencies:** uv lock resolved pyproject.toml into uv.lock; optional adapters remain separately installable.
