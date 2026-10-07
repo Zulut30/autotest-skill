@@ -56,3 +56,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **052 — create aiogram conversation demonstration target:** Real dispatcher factory contains commands, FSM, inline buttons, roles and bounded deduplication; new factories own independent storage/data.
 - **053 — feed real aiogram updates through explicit recording transport:** Real aiogram FSM handles /new, name and callback; one item is saved and callback acknowledged. Recording transport closes and makes no Telegram requests.
 - **054 — verify bot commands and honest transport scope:** Real aiogram handlers process start/help/unknown commands through recording transport; report explicitly says live Telegram was not validated.
+- **055 — verify Telegram buttons callbacks and stale data:** Real aiogram callback handlers expose Confirm/Cancel, acknowledge three callbacks, reject tampered/stale actions and save exactly one item.
