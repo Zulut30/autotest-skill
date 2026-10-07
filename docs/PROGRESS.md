@@ -37,3 +37,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **033 — validate local OpenAPI response contracts:** A real HTTP 200 passes its original schema and fails after a seeded response-type regression; remote contract references cannot fetch arbitrary URLs.
 - **034 — verify login logout and expired sessions:** 2 real HTTP scenarios cover wrong credentials, valid identity, revocation and expiry; fixture sessions now enforce expiry.
 - **035 — verify ownership and role matrix:** 7 real HTTP cases cover own/foreign reads, administrative access and unauthenticated denial without private object content.
+- **036 — verify API validation boundaries:** 9 real HTTP cases reject empty, oversized, negative, excessive, boolean and incorrectly typed input without state mutation.
