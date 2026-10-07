@@ -1,0 +1,46 @@
+version: 1
+project: isolated-web-demo
+project_root: ..
+allowed_origins: [http://127.0.0.1:8765]
+allow_mutations: true
+checks:
+  - id: web.health
+    kind: http
+    requirement: API readiness
+    oracle: The demo returns its functional ready state.
+    spec: {base_url: 'http://127.0.0.1:8765', path: /health, expected_json: {ready: true}}
+  - id: web.save
+    kind: web
+    mutating: true
+    depends_on: [web.health]
+    requirement: WEB-SAVE
+    oracle: Saved data remains visible after reloading the page.
+    spec:
+      base_url: http://127.0.0.1:8765
+      expected_text: [Autotest demo]
+      actions:
+        - {action: click, role: button, name: Sign in}
+        - {action: expect_text, text: Signed in as alice}
+        - {action: fill, label: Name, value: Browser saved work}
+        - {action: fill, label: Quantity, value: '2'}
+        - {action: click, role: button, name: Save}
+        - {action: expect_text, text: Saved}
+        - {action: reload}
+        - {action: expect_text, text: Browser saved work × 2}
+  - id: web.accessibility
+    kind: web
+    depends_on: [web.health]
+    requirement: Accessible adaptive interface
+    oracle: The mobile layout fits and has no selected automated WCAG violations.
+    spec:
+      base_url: http://127.0.0.1:8765
+      viewport: [360, 800]
+      check_layout: true
+      accessibility: true
+      expected_text: [Autotest demo]
+  - id: web.ux
+    kind: web
+    depends_on: [web.health]
+    requirement: Understandable interface feedback
+    oracle: Copy and disabled actions have no basic unexplained states.
+    spec: {base_url: 'http://127.0.0.1:8765', expected_text: [Autotest demo], ux: true}

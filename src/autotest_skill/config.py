@@ -96,6 +96,7 @@ class WebSpec(StrictModel):
     accessibility: bool = False
     check_layout: bool = False
     explore: bool = False
+    ux: bool = False
     baseline: str | None = None
     visual_threshold: float = Field(default=0.01, ge=0, le=1)
 

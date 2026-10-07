@@ -101,6 +101,11 @@ def run(check, context):
                     elif action.action == "expect_visible": expect(target).to_be_visible()
             for text in spec.expected_text:
                 expect(page.get_by_text(text, exact=True)).to_be_visible(timeout=min(spec.timeout, context.remaining()) * 1000)
+            if spec.ux:
+                from ..web_inspection import ux_observations
+                actual["ux_observations"] = ux_observations(page)
+                if actual["ux_observations"]:
+                    status, reason = "observation", "UX observations require review against product context"
             if spec.accessibility:
                 from ..accessibility import inspect
                 actual["accessibility"] = inspect(page)
@@ -122,7 +127,7 @@ def run(check, context):
         finally:
             if denied:
                 status, reason = "blocked", "Browser requests exceeded configured target or resource boundaries"
-            if spec.check_console and status == "passed" and (errors or http_errors or unexpected_console()):
+            if spec.check_console and status in {"passed", "observation"} and (errors or http_errors or unexpected_console()):
                 status, reason = "failed", "Page errors or unexpected HTTP failures were observed"
             actual.update({"url": page.url, "page_errors": errors, "console_errors": unexpected_console(), "http_errors": http_errors, "expected_http_errors": expected_http_errors, "denied": denied,
                            "browser_version": browser.version, "viewport": spec.viewport})

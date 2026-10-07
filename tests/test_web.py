@@ -153,3 +153,15 @@ def test_keyboard_focus_reaches_and_activates_sign_in(tmp_path):
     with start_demo() as (base,_):
         report,_=run_config(web_config(base,actions),tmp_path,tmp_path/'runs')
         assert report.exit_code()==0
+
+
+def test_ux_findings_are_observations_not_confirmed_defects(tmp_path):
+    with start_demo() as (base,_):
+        clean,_=run_config(web_config(base,ux=True),tmp_path,tmp_path/'runs')
+        assert clean.exit_code()==0
+        assert clean.results[0].actual['ux_observations']==[]
+    with start_demo(defects=True) as (base,_):
+        broken,_=run_config(web_config(base,ux=True),tmp_path,tmp_path/'runs')
+        assert broken.results[0].status=='observation'
+        assert 'failed' not in broken.counts()
+        assert all(not item['confirmed_defect'] for item in broken.results[0].actual['ux_observations'])
