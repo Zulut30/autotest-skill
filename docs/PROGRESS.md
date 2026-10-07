@@ -29,3 +29,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **025 — plan checks with prerequisite closure:** CLI plan executes; test proves dependencies precede consumers even when the dependency is outside the requested profile.
 - **026 — select checks by changed paths:** Behavioral tests cover targeted selection, prerequisite closure and smoke fallback when changes are absent or unmapped.
 - **027 — enforce run resource budgets:** Behavioral verification rejects action overflow and expired deadlines; adapters share per-run request/action/check counters.
+- **028 — standardize explicit adapter interface:** Existing command adapter resolves; unknown adapters block; protocol and context contract documented without arbitrary plugin imports.
