@@ -37,3 +37,18 @@ def test_conversation_completion_invalid_input_and_cancel(tmp_path):
     report,_=run_config(bot_config('invalid',events=events),tmp_path,tmp_path/'runs')
     assert report.exit_code()==0
     assert report.results[0].actual['states']['user_a']=='Collect:name'
+
+
+def test_user_chat_isolation_and_seeded_storage_leak(tmp_path):
+    clean,_=run_config(bot_config('isolation'),tmp_path,tmp_path/'runs')
+    assert clean.exit_code()==0
+    broken,_=run_config(bot_config('isolation',defects=True),tmp_path,tmp_path/'runs')
+    assert broken.results[0].status=='failed'
+    assert broken.results[0].actual['states']['user_b'] is not None
+
+
+def test_admin_command_denies_normal_user_and_allows_admin(tmp_path):
+    config=bot_config(events=[{'text':'/admin','user_id':501},{'text':'/admin','user_id':9001}],
+                      expected_messages=['Admin denied','Admin allowed'])
+    report,_=run_config(config,tmp_path,tmp_path/'runs')
+    assert report.exit_code()==0
