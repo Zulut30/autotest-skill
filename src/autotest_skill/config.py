@@ -94,9 +94,17 @@ class WebSpec(StrictModel):
     check_console: bool = True
     allowed_http_errors: dict[str, list[int]] = Field(default_factory=dict)
     accessibility: bool = False
+    check_layout: bool = False
     explore: bool = False
     baseline: str | None = None
     visual_threshold: float = Field(default=0.01, ge=0, le=1)
+
+
+    @model_validator(mode="after")
+    def viewport_bounds(self):
+        if not 240 <= self.viewport[0] <= 3840 or not 240 <= self.viewport[1] <= 2160:
+            raise ValueError("Viewport is outside supported resource limits")
+        return self
 
 
 class TelegramSpec(StrictModel):

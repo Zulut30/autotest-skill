@@ -66,7 +66,10 @@ def handler_for(state):
                     from pathlib import Path
                     page = Path(__file__).parent / "assets" / "demo.html"
                     if page.is_file():
-                        return self.respond(200, page.read_text().replace("__DEFECTS__", str(state.defects).lower()), "text/html; charset=utf-8")
+                        html = page.read_text().replace("__DEFECTS__", str(state.defects).lower())
+                        if state.defects:
+                            html = html.replace("</head>", "<style>main{width:1800px;max-width:none}</style></head>")
+                        return self.respond(200, html, "text/html; charset=utf-8")
                     return self.respond(200, {"fixture": True, "ready": True})
                 user = self.identity()
                 if not user:

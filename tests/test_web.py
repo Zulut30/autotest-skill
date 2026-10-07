@@ -108,3 +108,31 @@ def test_unexpected_server_failure_is_reported_with_context(tmp_path):
         assert report.results[0].actual['http_errors'][0]['status']==503
         report,_=run_config(web_config(base,actions,allowed_http_errors={'/api/dependent':[503]}),tmp_path,tmp_path/'runs')
         assert report.exit_code()==0
+
+
+def test_mobile_and_desktop_layout_and_seeded_overflow(tmp_path):
+    for width in (360,1440):
+        with start_demo() as (base,_):
+            report,_=run_config(web_config(base,viewport=[width,800],check_layout=True),tmp_path,tmp_path/'runs')
+            assert report.exit_code()==0
+            assert report.results[0].actual['layout']['document'] <= width
+    with start_demo(defects=True) as (base,_):
+        report,_=run_config(web_config(base,viewport=[360,800],check_layout=True),tmp_path,tmp_path/'runs')
+        assert report.results[0].status=='failed'
+        assert 'overflows' in report.results[0].reason
+
+
+def test_visual_comparison_preserves_approved_baseline(tmp_path):
+    import json, shutil
+    with start_demo() as (base,_):
+        initial,folder=run_config(web_config(base),tmp_path,tmp_path/'runs')
+        shutil.copyfile(folder/'web.flow.png',tmp_path/'approved.png')
+        (tmp_path/'approved.png.json').write_text(json.dumps(initial.results[0].actual['visual_conditions']))
+        clean,_=run_config(web_config(base,baseline='approved.png'),tmp_path,tmp_path/'runs')
+        assert clean.exit_code()==0
+    before=(tmp_path/'approved.png').read_bytes()
+    with start_demo(defects=True) as (base,_):
+        broken,_=run_config(web_config(base,baseline='approved.png'),tmp_path,tmp_path/'runs')
+        assert broken.results[0].status=='failed'
+        assert broken.results[0].actual['visual']['difference_ratio']>.01
+    assert (tmp_path/'approved.png').read_bytes()==before

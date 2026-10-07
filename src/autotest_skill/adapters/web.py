@@ -1,6 +1,7 @@
 """Real browser checks with origin boundaries, budgets and masked screenshots."""
 
 import os
+import sys
 from urllib.parse import urlsplit
 from ..artifacts import safe_file, write_json
 from ..doctor import browser_path
@@ -24,7 +25,7 @@ def locate(page, action):
 def run(check, context):
     from playwright.sync_api import sync_playwright, expect, TimeoutError as BrowserTimeout
     spec = check.spec
-    if spec.accessibility or spec.baseline:
+    if spec.accessibility:
         raise Blocked("Requested extended browser capability is not installed in this build")
     url = request_url(context.config, spec.base_url, spec.path)
     errors, denied, http_errors, expected_http_errors, evidence = [], [], [], [], []
@@ -61,7 +62,7 @@ def run(check, context):
         except Exception as exc:
             raise Blocked("Chromium is unavailable; install a Playwright browser or set AUTOTEST_BROWSER_PATH") from exc
         session = browser.new_context(viewport={"width": spec.viewport[0], "height": spec.viewport[1]},
-                                      service_workers="block")
+                                      service_workers="block", locale="en-US", color_scheme="light", device_scale_factor=1)
         session.route("**/*", route_request)
         page = session.new_page()
         page.on("pageerror", lambda error: errors.append(context.redactor.text(str(error))))
@@ -102,6 +103,10 @@ def run(check, context):
                     elif action.action == "expect_visible": expect(target).to_be_visible()
             for text in spec.expected_text:
                 expect(page.get_by_text(text, exact=True)).to_be_visible(timeout=min(spec.timeout, context.remaining()) * 1000)
+            if spec.check_layout:
+                actual["layout"] = page.evaluate('() => ({viewport:innerWidth,document:document.documentElement.scrollWidth})')
+                if actual["layout"]["document"] > actual["layout"]["viewport"]:
+                    status, reason = "failed", "Document overflows the configured viewport"
             if spec.explore:
                 from ..web_inspection import inspect_page
                 actual["interface_map"] = inspect_page(page, context)
@@ -124,8 +129,19 @@ def run(check, context):
                 page.screenshot(path=str(path), mask=[page.locator('input[type="password"], [data-autotest-sensitive]')], timeout=3000)
                 os.chmod(path, 0o600)
                 evidence.append(image)
+                actual["visual_conditions"] = {"browser_version": browser.version, "viewport": spec.viewport,
+                    "platform": sys.platform, "device_scale_factor": 1, "color_scheme": "light"}
+                if spec.baseline:
+                    from ..visual import compare
+                    actual["visual"] = compare(context.root, spec.baseline, path, actual["visual_conditions"])
+                    if actual["visual"]["difference_ratio"] > spec.visual_threshold:
+                        status, reason = "failed", "Screenshot differs from its approved baseline"
+            except Blocked as exc:
+                status, reason = "blocked", context.redactor.text(str(exc))
             except Exception:
                 actual["screenshot_unavailable"] = True
+                if spec.baseline:
+                    status, reason = "error", "Visual comparison could not execute"
             browser.close()
     artifact = f"{check.id}.web.json"
     write_json(context.folder, artifact, actual, context.redactor)
