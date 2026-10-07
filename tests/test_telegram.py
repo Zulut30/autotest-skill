@@ -52,3 +52,26 @@ def test_admin_command_denies_normal_user_and_allows_admin(tmp_path):
                       expected_messages=['Admin denied','Admin allowed'])
     report,_=run_config(config,tmp_path,tmp_path/'runs')
     assert report.exit_code()==0
+
+
+def test_duplicate_delivery_has_one_effect(tmp_path):
+    report,_=run_config(bot_config('duplicate'),tmp_path,tmp_path/'runs')
+    assert report.exit_code()==0
+    assert len(report.results[0].actual['items'])==1
+    report,_=run_config(bot_config('delivery'),tmp_path,tmp_path/'runs')
+    assert report.exit_code()==0
+    assert report.results[0].actual['delivery_entrypoint']=='feed_webhook_update'
+
+
+def test_real_webhook_http_ingress_authenticates_and_deduplicates():
+    import httpx
+    from autotest_skill.telegram_transport import update_event
+    from autotest_skill.telegram_webhook import start_webhook
+    with start_webhook() as (base,shared,dispatcher,session,bot):
+        with httpx.Client(base_url=base) as client:
+            payload=update_event(bot,1,text='/start').model_dump(mode='json',exclude_none=True)
+            assert client.post('/webhook',json=payload).status_code==403
+            headers={'X-Telegram-Bot-Api-Secret-Token':shared}
+            assert client.post('/webhook',json=payload,headers=headers).json()['ok'] is True
+            assert client.post('/webhook',json=payload,headers=headers).status_code==200
+            assert len(session.calls)==1

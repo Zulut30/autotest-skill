@@ -48,7 +48,10 @@ async def local(check,context):
             identifier=event.get('update_id',index)
             update=update_event(bot,identifier,text=event.get('text'),callback=event.get('callback'),
                                 user_id=event.get('user_id',501),chat_id=event.get('chat_id'))
-            await dispatcher.feed_update(bot,update)
+            if spec.scenario=='delivery':
+                await dispatcher.feed_webhook_update(bot,update,_timeout=min(5,context.remaining()))
+            else:
+                await dispatcher.feed_update(bot,update)
         texts=[call['text'] for call in session.calls]
         items=dispatcher.get('items',[])
         states={}
@@ -72,7 +75,7 @@ async def local(check,context):
             elif spec.scenario=='invalid': matches=matches and not items and states['user_a']=='Collect:name'
             elif spec.scenario=='isolation': matches=matches and states['user_a']=='Collect:confirm' and states['user_b'] is None and states['other_chat'] is None and not items
         actual={'mode':'local_recording_transport','calls':session.calls,'states':states,'items':items,
-                'events_executed':len(events),'live_telegram_validated':False}
+                'events_executed':len(events),'live_telegram_validated':False, 'delivery_entrypoint':'feed_webhook_update' if spec.scenario=='delivery' else 'feed_update'}
         artifact=f'{check.id}.telegram.json'
         write_json(context.folder,artifact,actual,context.redactor)
         return context.result(check,'passed' if matches else 'failed',expected={'messages':expected},actual=actual,
