@@ -42,6 +42,7 @@ class HttpSpec(StrictModel):
     expected_status: int = Field(default=200, ge=100, le=599)
     expected_json: dict[str, Any] | None = None
     expected_text: str | None = None
+    headers: dict[str, str] = Field(default_factory=dict)
     headers_env: dict[str, str] = Field(default_factory=dict)
     headers_from: dict[str, str] = Field(default_factory=dict)
     json_body: dict[str, Any] | None = None
@@ -190,6 +191,8 @@ class Config(StrictModel):
             path = getattr(spec, "path", None)
             if check.kind in {"http", "web", "performance"} and (not path.startswith("/") or path.startswith("//") or "\\" in path):
                 raise ValueError("Request paths must be relative to the configured origin")
+            if check.kind == "http" and any(key.lower() in {"authorization", "cookie", "proxy-authorization"} for key in spec.headers):
+                raise ValueError("Credential headers must use environment bindings or captures")
             for field in ("headers_env", "json_env"):
                 for name in getattr(spec, field, {}).values():
                     if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):

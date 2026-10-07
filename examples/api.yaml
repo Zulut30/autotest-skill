@@ -1,0 +1,47 @@
+version: 1
+project: isolated-api-demo
+project_root: ..
+allowed_origins: [http://127.0.0.1:8765]
+allow_mutations: true
+checks:
+  - id: api.health
+    kind: http
+    requirement: API readiness
+    oracle: Health reports the ready state.
+    spec: {base_url: 'http://127.0.0.1:8765', path: /health, expected_json: {ready: true}}
+  - id: api.login
+    kind: http
+    mutating: true
+    depends_on: [api.health]
+    requirement: API-LOGIN
+    oracle: Alice signs in and receives an authorization capture.
+    spec:
+      base_url: http://127.0.0.1:8765
+      method: POST
+      path: /api/login
+      # Deliberately synthetic credentials, valid only in the local fixture.
+      json_body: {username: alice, password: demo-password}
+      expected_json: {username: alice}
+      capture: {alice_auth: authorization}
+  - id: api.profile
+    kind: http
+    depends_on: [api.login]
+    requirement: API-LOGIN
+    oracle: The signed-in profile belongs to Alice.
+    spec:
+      base_url: http://127.0.0.1:8765
+      path: /api/me
+      headers_from: {Authorization: alice_auth}
+      expected_json: {username: alice, role: user}
+  - id: api.foreign-object
+    kind: http
+    severity: critical
+    depends_on: [api.login]
+    requirement: API-OWNERSHIP
+    oracle: Alice cannot read Bob's private item.
+    spec:
+      base_url: http://127.0.0.1:8765
+      path: /api/items/2
+      headers_from: {Authorization: alice_auth}
+      expected_status: 403
+      expected_json: {error: forbidden}

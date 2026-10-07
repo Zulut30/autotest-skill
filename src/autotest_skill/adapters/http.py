@@ -23,7 +23,8 @@ def extract(value, path):
 def run(check, context):
     spec = check.spec
     url = request_url(context.config, spec.base_url, spec.path)
-    headers = {key: context.redactor.binding(name) for key, name in spec.headers_env.items()}
+    headers = dict(spec.headers)
+    headers.update({key: context.redactor.binding(name) for key, name in spec.headers_env.items()})
     for key, name in spec.headers_from.items():
         if name not in context.variables:
             raise Blocked(f"Required prior capture {name} is unavailable")
@@ -37,11 +38,11 @@ def run(check, context):
             with client.stream(spec.method, url, json=body, headers=headers) as response:
                 chunks, size = [], 0
                 for chunk in response.iter_bytes():
+                    context.remaining()
                     size += len(chunk)
                     if size > 1_000_000:
                         raise Blocked("HTTP response exceeds the evidence size limit")
                     chunks.append(chunk)
-                response.read = lambda: b"".join(chunks)
                 content = b"".join(chunks)
                 import json
                 try:
