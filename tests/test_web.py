@@ -36,3 +36,30 @@ def test_ambiguous_locator_blocks_before_clicking(tmp_path):
         assert report.results[0].status == 'blocked'
         assert 'ambiguous' in report.results[0].reason
         assert not state.sessions
+
+
+SAVE_ACTIONS = [
+    {'action':'click','role':'button','name':'Sign in'},
+    {'action':'expect_text','text':'Signed in as alice'},
+    {'action':'fill','label':'Name','value':'Browser saved work'},
+    {'action':'fill','label':'Quantity','value':'2'},
+    {'action':'click','role':'button','name':'Save'},
+    {'action':'expect_text','text':'Saved'},
+    {'action':'reload'},
+    {'action':'expect_text','text':'Browser saved work × 2'},
+]
+
+
+def test_save_reopen_flow_confirms_persisted_backend_state(tmp_path):
+    with start_demo() as (base,state):
+        report,_ = run_config(web_config(base,SAVE_ACTIONS),tmp_path,tmp_path/'runs')
+        assert report.exit_code() == 0
+        assert any(item['name']=='Browser saved work' and item['quantity']==2 for item in state.items.values())
+
+
+def test_false_success_is_found_after_reopening(tmp_path):
+    with start_demo(defects=True) as (base,state):
+        report,_ = run_config(web_config(base,SAVE_ACTIONS,timeout=2),tmp_path,tmp_path/'runs')
+        assert report.results[0].status == 'failed'
+        assert len(report.results[0].attempts) == 1
+        assert not any(item['name']=='Browser saved work' for item in state.items.values())
