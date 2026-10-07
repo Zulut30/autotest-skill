@@ -1,0 +1,15 @@
+version: 1
+project: local-api
+project_root: ..
+allowed_origins:
+  - http://127.0.0.1:8765
+checks:
+  - id: api.health
+    kind: http
+    requirement: API readiness
+    oracle: Health endpoint returns the documented ready state.
+    spec:
+      base_url: http://127.0.0.1:8765
+      path: /health
+      expected_status: 200
+      expected_json: {ready: true}
