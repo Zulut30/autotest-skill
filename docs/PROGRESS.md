@@ -32,3 +32,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **028 — standardize explicit adapter interface:** Existing command adapter resolves; unknown adapters block; protocol and context contract documented without arbitrary plugin imports.
 - **029 — continue independent checks through runtime blocks:** Real subprocess integration confirms missing executable blocks dependents while an independent check executes; empty profiles remain non-green; checkpoints persist.
 - **030 — verify complete execution and reporting pipeline:** Real local HTTP target returns a seeded mismatch; pipeline executes, retries, exits 1 and preserves expected/actual evidence tied to its unique run.
+- **031 — create isolated API demonstration target:** Real HTTP integration verifies readiness, login, ownership denial, persisted creation and fresh state in a new fixture instance.
