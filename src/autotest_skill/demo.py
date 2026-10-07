@@ -23,6 +23,7 @@ class State:
             self.next_id = 3
             self.idempotency = {}
             self.dependency_down = False
+            self.health_delay = 0.0
 
 
 def handler_for(state):
@@ -57,6 +58,7 @@ def handler_for(state):
             path = urlsplit(self.path).path
             with state.lock:
                 if path == "/health":
+                    time.sleep(state.health_delay)
                     return self.respond(200, {"ready": True, "fixture": True})
                 if path == "/api/dependent":
                     return self.respond(503 if state.dependency_down else 200, {"available": not state.dependency_down})

@@ -98,7 +98,31 @@ def run(check, context):
     failures=[]
     if actual['p95_ms'] > spec.max_p95_ms: failures.append('p95 exceeds the configured threshold')
     if actual['error_rate'] > spec.max_error_rate: failures.append('error rate exceeds the configured threshold')
+    flaky=False
+    if spec.baseline:
+        baseline_path=safe_file(context.root,spec.baseline)
+        if not baseline_path.is_file() or baseline_path.stat().st_size>1_000_000:
+            raise Blocked('Approved performance baseline is missing or too large')
+        baseline=json.loads(baseline_path.read_text())
+        if baseline.get('conditions')!=actual['conditions'] or baseline.get('tool_version')!=actual['tool_version']:
+            raise Blocked('Performance baseline conditions or tool version are incompatible')
+        reference=baseline.get('p95_ms')
+        if not isinstance(reference,(int,float)) or not math.isfinite(reference) or reference<=0:
+            raise Blocked('Approved baseline p95 is invalid')
+        ratio=actual['p95_ms']/reference
+        actual['comparison']={'baseline':spec.baseline,'baseline_p95_ms':reference,'ratio':ratio}
+        if ratio>spec.max_regression_ratio:
+            replay=(k6(spec,context,url,check.id+'.replay') if spec.engine=='k6' else builtin(spec,context,url))
+            actual['comparison']['replay']=replay
+            replay_ratio=replay['p95_ms']/reference
+            actual['comparison']['replay_ratio']=replay_ratio
+            if replay['error_rate']>spec.max_error_rate:
+                failures.append('Replay error rate exceeds the configured threshold')
+            if replay_ratio>spec.max_regression_ratio:
+                failures.append('Compatible performance regression reproduced in an independent replay')
+            else:
+                flaky=True
     artifact=f'{check.id}.performance.json';write_json(context.folder,artifact,actual,context.redactor)
     return context.result(check,'failed' if failures else 'passed',actual=actual,
         expected={'max_p95_ms':spec.max_p95_ms,'max_error_rate':spec.max_error_rate},
-        reason='; '.join(failures),evidence=[artifact])
+        reason='; '.join(failures),evidence=[artifact],flaky=flaky)

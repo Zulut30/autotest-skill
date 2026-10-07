@@ -32,3 +32,19 @@ def test_absolute_latency_oracle_is_enforced(tmp_path):
     with start_demo() as (base,_):
         report,_=run_config(perf_config(base,max_p95_ms=.00001),tmp_path,tmp_path/'runs')
         assert report.results[0].status=='failed'
+
+
+def test_compatible_baseline_reproduces_regression_and_is_immutable(tmp_path):
+    import json
+    with start_demo() as (base,state):
+        reference,_=run_config(perf_config(base),tmp_path,tmp_path/'runs')
+        assert reference.exit_code()==0
+        baseline=tmp_path/'approved.json';baseline.write_text(json.dumps(reference.results[0].actual))
+        before=baseline.read_bytes()
+        state.health_delay=.08
+        broken,_=run_config(perf_config(base,baseline='approved.json',max_regression_ratio=1.1),tmp_path,tmp_path/'runs')
+        assert broken.results[0].status=='failed'
+        assert broken.results[0].actual['comparison']['replay_ratio']>1.1
+        incompatible,_=run_config(perf_config(base,baseline='approved.json',concurrency=1),tmp_path,tmp_path/'runs')
+        assert incompatible.results[0].status=='blocked'
+        assert baseline.read_bytes()==before
