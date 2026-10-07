@@ -27,3 +27,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **023 — execute repository suites with honest outcomes:** 3 integration tests run real child pytest processes: mixed pass/fail/skip, zero tests, and secret-safe evidence; original exits preserved.
 - **024 — require traceable test expectations:** Every check requires a requirement and oracle; behavioral validation rejects undocumented checks; references/oracles.md explains sources and assumptions.
 - **025 — plan checks with prerequisite closure:** CLI plan executes; test proves dependencies precede consumers even when the dependency is outside the requested profile.
+- **026 — select checks by changed paths:** Behavioral tests cover targeted selection, prerequisite closure and smoke fallback when changes are absent or unmapped.

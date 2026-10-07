@@ -11,3 +11,12 @@ def configuration():
 
 def test_prerequisites_are_ordered_even_outside_selected_profile():
     assert [c.id for c in select(configuration(), "smoke")] == ["login", "profile"]
+
+
+def test_changed_selection_and_safe_fallback():
+    config = configuration()
+    config.checks[1].covers = ["src/profile/**"]
+    config.checks[2].covers = ["src/other/**"]
+    assert [c.id for c in select(config, "changed", ["src/other/view.py"])] == ["other"]
+    assert [c.id for c in select(config, "changed", [])] == ["login", "profile"]
+    assert [c.id for c in select(config, "changed", ["unknown.py"])] == ["login", "profile"]

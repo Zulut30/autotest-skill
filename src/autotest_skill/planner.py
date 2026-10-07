@@ -1,12 +1,24 @@
 """Select bounded checks and include their prerequisite closure."""
 
 import json
+import fnmatch
+from pathlib import PurePosixPath
 from .config import load_config
 from .secrets import Redactor
 
 
 def select(config, profile="smoke", changed_files=()):
     selected = [check for check in config.checks if profile in check.profiles]
+    if profile == "changed":
+        paths = []
+        for value in changed_files:
+            path = PurePosixPath(value.replace("\\", "/"))
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError("Changed paths must be project-relative")
+            paths.append(str(path))
+        impacted = [check for check in selected if any(fnmatch.fnmatch(path, pattern)
+                    for path in paths for pattern in check.covers)]
+        selected = impacted or [check for check in config.checks if "smoke" in check.profiles]
     by_id = {check.id: check for check in config.checks}
     ordered, visited = [], set()
     def include(check):
