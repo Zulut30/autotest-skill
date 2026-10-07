@@ -62,7 +62,7 @@ class CommandSpec(StrictModel):
 
 
 class WebAction(StrictModel):
-    action: Literal["goto", "click", "fill", "press", "expect_text", "expect_visible", "expect_url", "reload", "screenshot"]
+    action: Literal["goto", "click", "double_click", "fill", "press", "expect_text", "expect_visible", "expect_url", "reload", "screenshot"]
     role: str | None = None
     name: str | None = None
     label: str | None = None
@@ -76,7 +76,7 @@ class WebAction(StrictModel):
 
     @model_validator(mode="after")
     def locator_contract(self):
-        if self.action in {"click", "fill", "press", "expect_text", "expect_visible"}:
+        if self.action in {"click", "double_click", "fill", "press", "expect_text", "expect_visible"}:
             if sum(bool(value) for value in (self.role,self.label,self.test_id,self.text)) != 1:
                 raise ValueError("An action needs exactly one semantic locator")
         if self.value is not None and self.value_env is not None:
@@ -92,6 +92,7 @@ class WebSpec(StrictModel):
     viewport: list[int] = Field(default_factory=lambda: [1280, 800], min_length=2, max_length=2)
     timeout: float = Field(default=15, gt=0, le=120)
     check_console: bool = True
+    allowed_http_errors: dict[str, list[int]] = Field(default_factory=dict)
     accessibility: bool = False
     explore: bool = False
     baseline: str | None = None
@@ -193,7 +194,7 @@ class Config(StrictModel):
                 raise ValueError("Project commands require configuration authorization")
             if check.kind == "http" and spec.method not in {"GET", "HEAD", "OPTIONS"} and not check.mutating:
                 raise ValueError("Mutating HTTP methods must be declared")
-            if check.kind == "web" and any(a.action in {"fill", "click", "press"} and not a.safe_read_only for a in spec.actions) and not check.mutating:
+            if check.kind == "web" and any(a.action in {"fill", "click", "double_click", "press"} and not a.safe_read_only for a in spec.actions) and not check.mutating:
                 raise ValueError("Interactive browser actions must declare mutation or read-only intent")
             for field in ("base_url", "server_url"):
                 value = getattr(spec, field, None)

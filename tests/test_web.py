@@ -63,3 +63,37 @@ def test_false_success_is_found_after_reopening(tmp_path):
         assert report.results[0].status == 'failed'
         assert len(report.results[0].attempts) == 1
         assert not any(item['name']=='Browser saved work' for item in state.items.values())
+
+
+def test_form_validation_does_not_persist_bad_input(tmp_path):
+    actions = SAVE_ACTIONS[:2] + [
+        {'action':'click','role':'button','name':'Save'},
+        {'action':'expect_text','text':'Name is required.'},
+        {'action':'fill','label':'Name','value':'Invalid quantity'},
+        {'action':'fill','label':'Quantity','value':'0'},
+        {'action':'click','role':'button','name':'Save'},
+        {'action':'expect_text','text':'Quantity must be between 1 and 100.'},
+    ]
+    with start_demo() as (base,state):
+        report,_=run_config(web_config(base,actions),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0
+        assert len(state.items)==2
+
+
+def test_expected_login_error_is_checked_not_disabled(tmp_path):
+    actions=[{'action':'fill','label':'Password','value':'wrong'},
+             {'action':'click','role':'button','name':'Sign in'},
+             {'action':'expect_text','text':'Sign in failed. Check your credentials.'}]
+    with start_demo() as (base,state):
+        report,_=run_config(web_config(base,actions,allowed_http_errors={'/api/login':[401]}),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0
+        assert report.results[0].actual['expected_http_errors'][0]['status']==401
+        assert not state.sessions
+
+
+def test_double_click_creates_at_most_one_object(tmp_path):
+    actions=SAVE_ACTIONS[:4]+[{'action':'double_click','role':'button','name':'Save'}, {'action':'expect_text','text':'Saved'}]
+    with start_demo() as (base,state):
+        report,_=run_config(web_config(base,actions),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0
+        assert len([i for i in state.items.values() if i['name']=='Browser saved work'])==1

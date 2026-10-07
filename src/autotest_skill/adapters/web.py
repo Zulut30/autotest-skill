@@ -1,6 +1,7 @@
 """Real browser checks with origin boundaries, budgets and masked screenshots."""
 
 import os
+from urllib.parse import urlsplit
 from ..artifacts import safe_file, write_json
 from ..doctor import browser_path
 from ..errors import Blocked
@@ -26,7 +27,7 @@ def run(check, context):
     if spec.accessibility or spec.baseline:
         raise Blocked("Requested extended browser capability is not installed in this build")
     url = request_url(context.config, spec.base_url, spec.path)
-    errors, denied, http_errors, evidence = [], [], [], []
+    errors, denied, http_errors, expected_http_errors, evidence = [], [], [], [], []
     actual = {}
     status, reason = "passed", ""
     def route_request(route):
@@ -39,7 +40,8 @@ def run(check, context):
             route.abort()
     def on_response(response):
         if response.status >= 400:
-            http_errors.append({"url": response.url, "status": response.status})
+            collection = expected_http_errors if response.status in spec.allowed_http_errors.get(urlsplit(response.url).path, []) else http_errors
+            collection.append({"url": response.url, "status": response.status})
         if "/api/login" in response.url and response.status == 200:
             try:
                 for key, value in response.json().items():
@@ -82,6 +84,9 @@ def run(check, context):
                     if target.count() > 1:
                         raise Blocked("Configured semantic locator is ambiguous")
                     if action.action == "click": target.click()
+                    elif action.action == "double_click":
+                        context.consume("actions")
+                        target.dblclick()
                     elif action.action == "fill": target.fill(value or "")
                     elif action.action == "press": target.press(value or "Enter")
                     elif action.action == "expect_text":
@@ -102,7 +107,7 @@ def run(check, context):
         finally:
             if denied:
                 status, reason = "blocked", "Browser requests exceeded configured target or resource boundaries"
-            actual.update({"url": page.url, "page_errors": errors, "http_errors": http_errors, "denied": denied,
+            actual.update({"url": page.url, "page_errors": errors, "http_errors": http_errors, "expected_http_errors": expected_http_errors, "denied": denied,
                            "browser_version": browser.version, "viewport": spec.viewport})
             image = f"{check.id}.png"
             try:
