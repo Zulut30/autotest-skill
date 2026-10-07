@@ -48,3 +48,4 @@ Each entry records a completed roadmap step. Unchecked steps remain unverified.
 - **044 — validate semantic browser locators:** Ambiguous button locator blocks without clicking; actions require one semantic locator and one value source; exact expected text is supported.
 - **045 — verify persisted browser user journeys:** Real login/save/reload passes on healthy target and finds a seeded false-success bug; mutating flow is not blindly retried.
 - **046 — verify forms negative feedback and duplicate clicks:** 3 Chromium scenarios confirm invalid input feedback, intentional 401 feedback and one persisted item after double click; allowed errors are scoped to explicit paths.
+- **047 — surface console and HTTP failures without false positives:** Real unexpected 503 fails; explicit negative 503/401 scenarios pass their UI oracle. Browser-generated resource messages are matched to the same expected response; other console errors remain findings.

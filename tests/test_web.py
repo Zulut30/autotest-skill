@@ -97,3 +97,14 @@ def test_double_click_creates_at_most_one_object(tmp_path):
         report,_=run_config(web_config(base,actions),tmp_path,tmp_path/'runs')
         assert report.exit_code()==0
         assert len([i for i in state.items.values() if i['name']=='Browser saved work'])==1
+
+
+def test_unexpected_server_failure_is_reported_with_context(tmp_path):
+    with start_demo() as (base,state):
+        state.dependency_down=True
+        actions=[{'action':'click','role':'button','name':'Check service'}, {'action':'expect_text','text':'Service unavailable. Try again.'}]
+        report,_=run_config(web_config(base,actions),tmp_path,tmp_path/'runs')
+        assert report.results[0].status=='failed'
+        assert report.results[0].actual['http_errors'][0]['status']==503
+        report,_=run_config(web_config(base,actions,allowed_http_errors={'/api/dependent':[503]}),tmp_path,tmp_path/'runs')
+        assert report.exit_code()==0

@@ -29,6 +29,11 @@ def run(check, context):
     url = request_url(context.config, spec.base_url, spec.path)
     errors, denied, http_errors, expected_http_errors, evidence = [], [], [], [], []
     actual = {}
+    console_records = []
+    def unexpected_console():
+        return [record for record in console_records if not (
+            record["text"].startswith("Failed to load resource:") and
+            any(item["url"] == record["url"] for item in expected_http_errors))]
     status, reason = "passed", ""
     def route_request(route):
         try:
@@ -61,6 +66,8 @@ def run(check, context):
         page = session.new_page()
         page.on("pageerror", lambda error: errors.append(context.redactor.text(str(error))))
         page.on("response", on_response)
+        page.on("console", lambda message: console_records.append({"text": context.redactor.text(message.text),
+                "url": message.location.get("url", "")}) if message.type == "error" else None)
         page.set_default_timeout(min(spec.timeout, context.remaining()) * 1000)
         try:
             context.consume("actions")
@@ -98,7 +105,7 @@ def run(check, context):
             if spec.explore:
                 from ..web_inspection import inspect_page
                 actual["interface_map"] = inspect_page(page, context)
-            if spec.check_console and (errors or http_errors):
+            if spec.check_console and (errors or http_errors or unexpected_console()):
                 status, reason = "failed", "Page errors or unexpected HTTP failures were observed"
         except (AssertionError, BrowserTimeout) as exc:
             status, reason = "failed", f"Browser oracle was not satisfied ({type(exc).__name__})"
@@ -107,7 +114,9 @@ def run(check, context):
         finally:
             if denied:
                 status, reason = "blocked", "Browser requests exceeded configured target or resource boundaries"
-            actual.update({"url": page.url, "page_errors": errors, "http_errors": http_errors, "expected_http_errors": expected_http_errors, "denied": denied,
+            if spec.check_console and status == "passed" and (errors or http_errors or unexpected_console()):
+                status, reason = "failed", "Page errors or unexpected HTTP failures were observed"
+            actual.update({"url": page.url, "page_errors": errors, "console_errors": unexpected_console(), "http_errors": http_errors, "expected_http_errors": expected_http_errors, "denied": denied,
                            "browser_version": browser.version, "viewport": spec.viewport})
             image = f"{check.id}.png"
             try:
