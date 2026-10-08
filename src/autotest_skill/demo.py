@@ -13,6 +13,7 @@ class State:
     def __init__(self, defects=False):
         self.lock = threading.RLock()
         self.defects = defects
+        self.html_override = None  # Python-only fixture control for independent regression replay.
         self.reset()
 
     def reset(self):
@@ -85,7 +86,11 @@ def handler_for(state):
 
                     page = Path(__file__).parent / "assets" / "demo.html"
                     if page.is_file():
-                        html = page.read_text().replace("__DEFECTS__", str(state.defects).lower())
+                        html = (
+                            state.html_override
+                            if state.html_override is not None
+                            else page.read_text()
+                        ).replace("__DEFECTS__", str(state.defects).lower())
                         if state.defects:
                             html = html.replace(
                                 "</head>", "<style>main{width:1800px;max-width:none}</style></head>"

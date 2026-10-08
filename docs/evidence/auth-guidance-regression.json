@@ -1,0 +1,177 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-10-08T18:25:17.001663+02:00",
+  "scope": "First improvement cycle: auth guidance, explicit UI state assertions and saved-web-run regression proposals",
+  "source_base_revision": "d8e49f926c31804283c3b0631e00dca68c9af8ba",
+  "working_tree_dirty_during_verification": true,
+  "before": {
+    "run_id": "20261008T160504Z-9330b055879b",
+    "check_status": "failed",
+    "generated_pytest_exit": 1,
+    "html_sha256": "69102b386c72d89f455380cc8cde62e5716adc8e6ff3cc14faee31c8efa06d60",
+    "assertions": [
+      {
+        "index": 0,
+        "action": "expect_disabled",
+        "locator": {
+          "role": "button",
+          "name": "Save"
+        },
+        "expected": {
+          "enabled": false
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": false
+        }
+      },
+      {
+        "index": 2,
+        "action": "expect_text",
+        "locator": {
+          "text": "Signed in as alice"
+        },
+        "expected": {
+          "visible": true,
+          "text": "Signed in as alice"
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": true,
+          "text": "Signed in as alice"
+        }
+      },
+      {
+        "index": 3,
+        "action": "expect_enabled",
+        "locator": {
+          "role": "button",
+          "name": "Save"
+        },
+        "expected": {
+          "enabled": true
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": true
+        }
+      },
+      {
+        "index": 4,
+        "action": "expect_text",
+        "locator": {
+          "text": "Ready to save items."
+        },
+        "expected": {
+          "visible": true,
+          "text": "Ready to save items."
+        },
+        "status": "failed",
+        "actual": {
+          "count": 0
+        }
+      }
+    ]
+  },
+  "after": {
+    "run_id": "20261008T161740Z-17818f5f3ed6",
+    "check_status": "passed",
+    "generated_pytest_exit": 0,
+    "html_sha256": "2c51ab0837d12900bc9c2959ed5cc67d7c1972912bc146b6d68ea284090db337",
+    "assertions": [
+      {
+        "index": 0,
+        "action": "expect_disabled",
+        "locator": {
+          "role": "button",
+          "name": "Save"
+        },
+        "expected": {
+          "enabled": false
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": false
+        }
+      },
+      {
+        "index": 2,
+        "action": "expect_text",
+        "locator": {
+          "text": "Signed in as alice"
+        },
+        "expected": {
+          "visible": true,
+          "text": "Signed in as alice"
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": true,
+          "text": "Signed in as alice"
+        }
+      },
+      {
+        "index": 3,
+        "action": "expect_enabled",
+        "locator": {
+          "role": "button",
+          "name": "Save"
+        },
+        "expected": {
+          "enabled": true
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": true
+        }
+      },
+      {
+        "index": 4,
+        "action": "expect_text",
+        "locator": {
+          "text": "Ready to save items."
+        },
+        "expected": {
+          "visible": true,
+          "text": "Ready to save items."
+        },
+        "status": "passed",
+        "actual": {
+          "count": 1,
+          "visible": true,
+          "enabled": true,
+          "text": "Ready to save items."
+        }
+      }
+    ]
+  },
+  "same_generated_test_sha256": "1affdf84fa933dd0e5eb6e6ce00f57b13d265d68e5e7b90cd55baec83562423f",
+  "web_example": {
+    "counts": {
+      "passed": 5
+    },
+    "run_id": "20261008T161744Z-37d4f1f645fd"
+  },
+  "full_suite": {
+    "passed": 124,
+    "tests": 136,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 12
+  },
+  "native_tests": "12 native checks skipped in this portable run; no native changes or new native validation claimed",
+  "credential_checks": "[REDACTED]",
+  "limitations": "Report proposals support failed declared web oracles and reliable web/HTTP prerequisites. Remaining proposed improvements and original external release gates are unchanged."
+}

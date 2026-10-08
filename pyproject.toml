@@ -76,6 +76,7 @@ line-length = 100
 "docs/THIRD-PARTY.md" = "autotest_skill/skill/docs/THIRD-PARTY.md"
 "docs/X.md" = "autotest_skill/skill/docs/X.md"
 "docs/evidence/access-matrix.json" = "autotest_skill/skill/docs/evidence/access-matrix.json"
+"docs/evidence/auth-guidance-regression.json" = "autotest_skill/skill/docs/evidence/auth-guidance-regression.json"
 "docs/evidence/android-radio-unavailable.json" = "autotest_skill/skill/docs/evidence/android-radio-unavailable.json"
 "docs/evidence/benchmark.json" = "autotest_skill/skill/docs/evidence/benchmark.json"
 "docs/evidence/ci.json" = "autotest_skill/skill/docs/evidence/ci.json"

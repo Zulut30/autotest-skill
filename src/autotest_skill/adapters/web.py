@@ -14,7 +14,12 @@ from ..secrets import SENSITIVE
 
 def locate(page, action):
     if action.role:
-        return page.get_by_role(action.role, name=action.name, exact=True)
+        return page.get_by_role(
+            action.role,
+            name=action.name,
+            exact=True,
+            include_hidden=action.action == "expect_hidden",
+        )
     if action.label:
         return page.get_by_label(action.label, exact=True)
     if action.test_id:
@@ -22,6 +27,27 @@ def locate(page, action):
     if action.text:
         return page.get_by_text(action.text, exact=True)
     raise ValueError("Action requires a semantic locator")
+
+
+def observe_assertion(target, include_text):
+    """Inspect only the declared assertion target, never collect a raw page snapshot."""
+    from playwright.sync_api import Error as BrowserError
+
+    try:
+        count = target.count()
+        observed = {"count": count}
+        if count == 1:
+            observed.update(visible=target.is_visible(), enabled=target.is_enabled())
+            if include_text:
+                sensitive = target.evaluate(
+                    "el => Boolean(el.closest('input[type=password], [data-autotest-sensitive]'))"
+                )
+                observed["text"] = (
+                    "[WITHHELD]" if sensitive else target.inner_text(timeout=1000)[:2000]
+                )
+        return observed
+    except BrowserError:
+        return {"unavailable": True}
 
 
 def run(check, context):
@@ -32,7 +58,7 @@ def run(check, context):
     spec = check.spec
     url = request_url(context.config, spec.base_url, spec.path)
     errors, denied, http_errors, expected_http_errors, evidence = [], [], [], [], []
-    actual = {"action_timings": []}
+    actual = {"action_timings": [], "assertions": []}
     console_records = []
 
     def unexpected_console():
@@ -178,12 +204,50 @@ def run(check, context):
                         target.fill(value or "")
                     elif action.action == "press":
                         target.press(value or "Enter")
-                    elif action.action == "expect_text":
-                        expect(target).to_be_visible()
-                        if value is not None:
-                            expect(target).to_have_text(value)
-                    elif action.action == "expect_visible":
-                        expect(target).to_be_visible()
+                    elif action.action.startswith("expect_"):
+                        expected = {
+                            "expect_text": {
+                                "visible": True,
+                                "text": value if value is not None else action.text,
+                            },
+                            "expect_visible": {"visible": True},
+                            "expect_hidden": {"visible": False},
+                            "expect_enabled": {"enabled": True},
+                            "expect_disabled": {"enabled": False},
+                        }[action.action]
+                        assertion = {
+                            "index": index,
+                            "action": action.action,
+                            "locator": {
+                                key: getattr(action, key)
+                                for key in ("role", "name", "label", "test_id", "text")
+                                if getattr(action, key) is not None
+                            },
+                            "expected": expected,
+                            "status": "failed",
+                        }
+                        actual["assertions"].append(assertion)
+                        try:
+                            assertion_timeout = min(spec.timeout, context.remaining()) * 1000
+                            if action.action == "expect_text":
+                                expect(target).to_be_visible(timeout=assertion_timeout)
+                                if value is not None:
+                                    expect(target).to_have_text(
+                                        value, timeout=min(spec.timeout, context.remaining()) * 1000
+                                    )
+                            elif action.action == "expect_visible":
+                                expect(target).to_be_visible(timeout=assertion_timeout)
+                            elif action.action == "expect_hidden":
+                                expect(target).to_be_hidden(timeout=assertion_timeout)
+                            elif action.action == "expect_enabled":
+                                expect(target).to_be_enabled(timeout=assertion_timeout)
+                            elif action.action == "expect_disabled":
+                                expect(target).to_be_disabled(timeout=assertion_timeout)
+                            assertion["status"] = "passed"
+                        finally:
+                            assertion["actual"] = observe_assertion(
+                                target, action.action == "expect_text"
+                            )
                 if spec.measure_performance:
                     actual["action_timings"].append(
                         {
@@ -266,30 +330,38 @@ def run(check, context):
             image = f"{check.id}.png"
             try:
                 if any(a.value_env for a in spec.actions):
-                    raise Blocked("Screenshot withheld because secret-bound actions were used")
-                path = safe_file(context.folder, image)
-                page.screenshot(
-                    path=str(path),
-                    mask=[page.locator('input[type="password"], [data-autotest-sensitive]')],
-                    timeout=3000,
-                )
-                os.chmod(path, 0o600)
-                evidence.append(image)
-                actual["visual_conditions"] = {
-                    "browser_version": browser.version,
-                    "viewport": spec.viewport,
-                    "platform": sys.platform,
-                    "device_scale_factor": 1,
-                    "color_scheme": "light",
-                }
-                if spec.baseline:
-                    from ..visual import compare
-
-                    actual["visual"] = compare(
-                        context.root, spec.baseline, path, actual["visual_conditions"]
+                    actual["screenshot_withheld"] = "Secret-bound browser actions were used"
+                    if spec.baseline:
+                        raise Blocked(
+                            "Visual comparison requires a screenshot withheld for privacy"
+                        )
+                else:
+                    path = safe_file(context.folder, image)
+                    page.screenshot(
+                        path=str(path),
+                        mask=[page.locator('input[type="password"], [data-autotest-sensitive]')],
+                        timeout=3000,
                     )
-                    if actual["visual"]["difference_ratio"] > spec.visual_threshold:
-                        status, reason = "failed", "Screenshot differs from its approved baseline"
+                    os.chmod(path, 0o600)
+                    evidence.append(image)
+                    actual["visual_conditions"] = {
+                        "browser_version": browser.version,
+                        "viewport": spec.viewport,
+                        "platform": sys.platform,
+                        "device_scale_factor": 1,
+                        "color_scheme": "light",
+                    }
+                    if spec.baseline:
+                        from ..visual import compare
+
+                        actual["visual"] = compare(
+                            context.root, spec.baseline, path, actual["visual_conditions"]
+                        )
+                        if actual["visual"]["difference_ratio"] > spec.visual_threshold:
+                            status, reason = (
+                                "failed",
+                                "Screenshot differs from its approved baseline",
+                            )
             except Blocked as exc:
                 status, reason = "blocked", context.redactor.text(str(exc))
             except (BrowserError, ValueError, OSError):
@@ -303,7 +375,13 @@ def run(check, context):
     return context.result(
         check,
         status,
-        expected={"text": spec.expected_text},
+        expected={
+            "text": spec.expected_text,
+            "assertions": [
+                {"index": a["index"], "locator": a["locator"], "expected": a["expected"]}
+                for a in actual["assertions"]
+            ],
+        },
         actual=actual,
         reason=reason,
         evidence=evidence,

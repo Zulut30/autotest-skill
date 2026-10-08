@@ -28,6 +28,7 @@ def inspect(directory):
         }
     required = {
         "autotest_skill/cli.py",
+        "autotest_skill/regression.py",
         "autotest_skill/assets/benchmark/catalog.json",
         "autotest_skill/assets/axe.min.js",
         "autotest_skill/assets/AXE-LICENSE.txt",
@@ -37,6 +38,7 @@ def inspect(directory):
         "autotest_skill/skill/schemas/result.schema.json",
         "autotest_skill/skill/examples/api.yaml",
         "autotest_skill/skill/docs/QUICKSTART.md",
+        "autotest_skill/skill/docs/evidence/auth-guidance-regression.json",
         f"autotest_agent_skill-{version}.dist-info/licenses/LICENSE",
     }
     assert required <= wheel_names, "Required wheel resources missing: " + str(

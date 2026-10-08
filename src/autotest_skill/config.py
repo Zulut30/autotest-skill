@@ -104,6 +104,9 @@ class WebAction(StrictModel):
         "press",
         "expect_text",
         "expect_visible",
+        "expect_hidden",
+        "expect_enabled",
+        "expect_disabled",
         "expect_url",
         "reload",
         "screenshot",
@@ -129,6 +132,9 @@ class WebAction(StrictModel):
                 "press",
                 "expect_text",
                 "expect_visible",
+                "expect_hidden",
+                "expect_enabled",
+                "expect_disabled",
             }
             and sum(bool(value) for value in (self.role, self.label, self.test_id, self.text)) != 1
         ):

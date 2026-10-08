@@ -39,6 +39,8 @@ For your own project, use a reviewed configuration:
 .venv/bin/autotest run examples/api.yaml
 ```
 
+Web scenarios can assert enabled, disabled, visible and hidden states across login, save and logout. For a reproduced failed web oracle, `autotest regression --from-run RUN_DIRECTORY --check CHECK_ID --output tests/test_reported_regression.py` proposes a pytest check from the saved scenario and its reliable web/HTTP prerequisites. Review it, restore the test target/data, then verify failure before the fix and success after it. [Replay instructions and limits](docs/CLI.md#regression-from-a-saved-web-failure).
+
 Exit codes: `0` passed, `1` failed/flaky, `2` blocked or no checks executed, `3` tool error, `130` interrupted. A skipped or empty run cannot establish success.
 
 ## What executes

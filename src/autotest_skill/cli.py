@@ -31,9 +31,12 @@ def build_parser():
     benchmark = commands.add_parser("benchmark", help="Exercise seeded defects and clean controls")
     benchmark.add_argument("--output", default=".autotest/benchmark")
     regression = commands.add_parser(
-        "regression", help="Propose a regression test for a confirmed seeded case"
+        "regression", help="Propose a regression test from a failed web run or seeded case"
     )
-    regression.add_argument("--case", required=True)
+    regression_source = regression.add_mutually_exclusive_group(required=True)
+    regression_source.add_argument("--case")
+    regression_source.add_argument("--from-run", metavar="RUN_DIRECTORY")
+    regression.add_argument("--check", help="Select the failed web check in a saved run")
     regression.add_argument("--output", required=True)
     demo = commands.add_parser("demo", help="Start the isolated demonstration target")
     demo.add_argument("--port", type=int, default=8765)

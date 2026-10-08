@@ -51,6 +51,19 @@ def collect(config, report, root, folder, redactor):
         "input_fingerprints": inputs,
         "evidence": evidence,
         "configuration": config.model_dump(),
+        # Names of bindings/capture paths are metadata, not credential values. A list keeps
+        # the ordinary redactor from treating an Authorization/password dictionary key as
+        # a literal credential and erasing the name needed for a safe replay.
+        "configuration_bindings": [
+            {
+                "check": check.id,
+                "field": field,
+                "entries": [{"name": key, "binding": value} for key, value in mapping.items()],
+            }
+            for check in config.checks
+            for field in ("headers_env", "headers_from", "json_env", "capture")
+            if (mapping := getattr(check.spec, field, {}))
+        ],
         "checks": [
             {
                 "id": r.id,

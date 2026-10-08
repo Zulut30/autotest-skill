@@ -2,20 +2,88 @@
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Autotest demo</title><link rel="icon" href="data:,">
 <style>*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#15233b;font:16px system-ui,sans-serif}main{max-width:740px;margin:40px auto;padding:24px}section{background:white;padding:24px;border:1px solid #d8e0ed;border-radius:12px;margin:20px 0}label{display:block;margin:12px 0 6px}input,select,button{font:inherit;max-width:100%;padding:10px;border:1px solid #8a97ae;border-radius:6px}input,select{width:100%}button{margin-top:14px;background:#164aba;color:white;cursor:pointer}button:disabled{background:#526580;cursor:wait}h1{font-size:32px}a{color:#164aba}[role=alert]{color:#9b1717}li{overflow-wrap:anywhere;margin:8px 0}*:focus-visible{outline:3px solid #b34400;outline-offset:3px}@media(max-width:480px){main{margin:12px auto;padding:12px}section{padding:16px}}</style></head>
 <body><main><h1>Autotest demo</h1><p>Isolated test target. Synthetic accounts only.</p><a href="/health">Service health</a>
-<section aria-labelledby="account-title"><h2 id="account-title">Account</h2><form id="login"><label for="username">User</label><select id="username"><option>alice</option><option>bob</option></select><label for="password">Password</label><input id="password" type="password" value="demo-password" autocomplete="current-password"><button type="submit">Sign in</button></form><p id="identity" role="status"></p></section>
-<section aria-labelledby="items-title"><h2 id="items-title">Items</h2><form id="item" novalidate><label for="name">Name</label><input id="name" maxlength="100"><label for="quantity">Quantity</label><input id="quantity" type="number" value="1" min="1" max="100"><p id="save-help">Sign in before saving items.</p><button id="save" type="submit" aria-describedby="save-help" disabled>Save</button></form><p id="feedback" role="status"></p><p id="error" role="alert" hidden></p><button id="refresh" type="button">Reload items</button><ul id="items" aria-label="Saved items"></ul></section>
+<section aria-labelledby="account-title"><h2 id="account-title">Account</h2><form id="login"><label for="username">User</label><select id="username"><option>alice</option><option>bob</option></select><label for="password">Password</label><input id="password" type="password" value="demo-password" autocomplete="current-password"><button type="submit">Sign in</button></form><p id="identity" role="status"></p><button id="logout" type="button" hidden aria-describedby="identity">Sign out</button></section>
+<section aria-labelledby="items-title"><h2 id="items-title">Items</h2><form id="item" novalidate><label for="name">Name</label><input id="name" maxlength="100"><label for="quantity">Quantity</label><input id="quantity" type="number" value="1" min="1" max="100"><p id="save-help" data-testid="save-help" role="status">Sign in before saving items.</p><button id="save" type="submit" aria-describedby="save-help" disabled>Save</button></form><p id="feedback" role="status"></p><p id="error" role="alert" hidden></p><button id="refresh" type="button">Reload items</button><ul id="items" aria-label="Saved items"></ul></section>
 <section aria-labelledby="service-title"><h2 id="service-title">Service</h2><button id="service" type="button">Check service</button><p id="service-state" role="status"></p></section></main>
 <script>
 const defects=__DEFECTS__;
 const byId=id=>document.getElementById(id);
-let authorization=localStorage.getItem('demo-authorization'), saving=false;
-async function api(path,options={}){const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(authorization?{'Authorization':authorization}:{}),...options.headers}});const body=response.status===204?{}:await response.json();if(!response.ok)throw new Error(body.error||'Service unavailable');return body;}
+let authorization=localStorage.getItem('demo-authorization'), saving=false, currentUser=null;
+function updateAccountControls(){
+  const signedIn=Boolean(currentUser);
+  byId('save').disabled=!signedIn||saving;
+  byId('save-help').textContent=!signedIn?'Sign in before saving items.':saving?'Saving item…':'Ready to save items.';
+  byId('logout').hidden=!signedIn;
+  byId('logout').disabled=!signedIn||saving;
+}
+function endSession(message){
+  authorization=null;
+  currentUser=null;
+  localStorage.removeItem('demo-authorization');
+  byId('identity').textContent=message;
+  byId('items').replaceChildren();
+  byId('feedback').textContent='';
+  updateAccountControls();
+}
+async function api(path,options={}){
+  const response=await fetch(path,{...options,headers:{'Content-Type':'application/json',...(authorization?{'Authorization':authorization}:{}),...options.headers}});
+  const body=response.status===204?{}:await response.json();
+  if(!response.ok){
+    if(response.status===401&&path!=='/api/login')endSession('Session expired. Please sign in.');
+    const issue=new Error(body.error||'Service unavailable');
+    issue.status=response.status;
+    throw issue;
+  }
+  return body;
+}
 function error(message){byId('error').textContent=message;byId('error').hidden=false;}
 async function refresh(){if(!authorization)return;const data=await api('/api/items');byId('items').replaceChildren(...data.items.map(item=>{const li=document.createElement('li');li.textContent=item.name+' × '+item.quantity;return li;}));}
-async function identity(){if(!authorization)return;try{const user=await api('/api/me');byId('identity').textContent='Signed in as '+user.username;byId('save').disabled=false;await refresh();}catch(_){authorization=null;localStorage.removeItem('demo-authorization');byId('identity').textContent='Please sign in';}}
-byId('login').addEventListener('submit',async event=>{event.preventDefault();byId('error').hidden=true;try{const data=await api('/api/login',{method:'POST',body:JSON.stringify({username:byId('username').value,password:byId('password').value})});authorization=data.authorization;localStorage.setItem('demo-authorization',authorization);await identity();}catch(_){error('Sign in failed. Check your credentials.');}});
-byId('item').addEventListener('submit',async event=>{event.preventDefault();if(saving)return;byId('error').hidden=true;const name=byId('name').value.trim(),quantity=Number(byId('quantity').value);if(!name){error('Name is required.');return;}if(!Number.isInteger(quantity)||quantity<1||quantity>100){error('Quantity must be between 1 and 100.');return;}saving=true;byId('save').disabled=true;try{if(!defects)await api('/api/items',{method:'POST',body:JSON.stringify({name,quantity})});byId('feedback').textContent='Saved';byId('name').value='';await refresh();}catch(_){error('Could not save. Try again.');}finally{saving=false;byId('save').disabled=false;}});
+async function identity(){
+  if(!authorization){updateAccountControls();return;}
+  try{
+    const user=await api('/api/me');
+    currentUser=user.username;
+    byId('identity').textContent='Signed in as '+user.username;
+    updateAccountControls();
+    await refresh();
+  }catch(issue){
+    if(issue.status!==401)error('Could not load account. Try again.');
+    updateAccountControls();
+  }
+}
+byId('login').addEventListener('submit',async event=>{
+  event.preventDefault();byId('error').hidden=true;
+  try{
+    const data=await api('/api/login',{method:'POST',body:JSON.stringify({username:byId('username').value,password:byId('password').value})});
+    currentUser=null;
+    byId('items').replaceChildren();
+    byId('feedback').textContent='';
+    authorization=data.authorization;
+    localStorage.setItem('demo-authorization',authorization);
+    await identity();
+  }catch(_){error('Sign in failed. Check your credentials.');}
+});
+byId('logout').addEventListener('click',async()=>{
+  byId('error').hidden=true;
+  try{
+    await api('/api/logout',{method:'POST',body:'{}'});
+    endSession('Signed out. Please sign in.');
+  }catch(issue){if(issue.status!==401)error('Could not sign out. Try again.');}
+});
+byId('item').addEventListener('submit',async event=>{
+  event.preventDefault();if(saving||!currentUser)return;
+  byId('error').hidden=true;
+  const name=byId('name').value.trim(),quantity=Number(byId('quantity').value);
+  if(!name){error('Name is required.');return;}
+  if(!Number.isInteger(quantity)||quantity<1||quantity>100){error('Quantity must be between 1 and 100.');return;}
+  saving=true;updateAccountControls();
+  try{
+    if(!defects)await api('/api/items',{method:'POST',body:JSON.stringify({name,quantity})});
+    byId('feedback').textContent='Saved';byId('name').value='';await refresh();
+  }catch(_){error('Could not save. Try again.');}
+  finally{saving=false;updateAccountControls();}
+});
 byId('refresh').addEventListener('click',()=>refresh().catch(()=>error('Could not load items. Try again.')));
 byId('service').addEventListener('click',async()=>{try{await api('/api/dependent');byId('service-state').textContent='Service available';}catch(_){byId('service-state').textContent='Service unavailable. Try again.';}});
-identity();
+updateAccountControls();identity();
 </script></body></html>

@@ -27,6 +27,27 @@ checks:
         - {action: expect_text, text: Saved}
         - {action: reload}
         - {action: expect_text, text: Browser saved work × 2}
+  - id: web.auth-state
+    kind: web
+    mutating: true
+    depends_on: [web.health]
+    requirement: WEB-AUTH-GUIDANCE
+    severity: low
+    oracle: Saving availability and guidance agree with the signed-in state, including logout.
+    spec:
+      base_url: http://127.0.0.1:8765
+      actions:
+        - {action: expect_disabled, role: button, name: Save}
+        - {action: expect_hidden, role: button, name: Sign out}
+        - {action: expect_text, test_id: save-help, value: Sign in before saving items.}
+        - {action: click, role: button, name: Sign in}
+        - {action: expect_text, text: Signed in as alice}
+        - {action: expect_enabled, role: button, name: Save}
+        - {action: expect_text, test_id: save-help, value: Ready to save items.}
+        - {action: click, role: button, name: Sign out}
+        - {action: expect_disabled, role: button, name: Save}
+        - {action: expect_hidden, role: button, name: Sign out}
+        - {action: expect_text, test_id: save-help, value: Sign in before saving items.}
   - id: web.accessibility
     kind: web
     depends_on: [web.health]
