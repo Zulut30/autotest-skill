@@ -162,9 +162,18 @@ def run(check, context):
                     call(element.clear)
                     call(element.send_keys, value or "")
                 elif action.action == "expect_text" and value is not None:
-                    observed = call(lambda element=element: element.text)
-                    if observed != value:
-                        raise AssertionError("Native text differs from the oracle")
+                    WebDriverWait(
+                        driver, min(spec.wait_timeout, context.remaining()), poll_frequency=0.25
+                    ).until(
+                        lambda _, element=element, value=value: call(lambda: element.text) == value
+                    )
+                    actual.setdefault("assertions", []).append(
+                        {
+                            "locator": action.accessibility_id or action.resource_id or action.text,
+                            "expected": value,
+                            "observed": call(lambda element=element: element.text),
+                        }
+                    )
         actual["package"] = call(lambda: driver.current_package)
         actual["viewport"] = call(driver.get_window_size)
     except Blocked as exc:
