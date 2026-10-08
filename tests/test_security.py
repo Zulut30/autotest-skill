@@ -68,3 +68,15 @@ def test_real_gitleaks_redacts_control_and_clean_source_passes(tmp_path):
     target.write_text('import os\ngithub_token = os.environ["GITHUB_TOKEN"]\n')
     clean,_=run_config(security_config('gitleaks','source'),tmp_path,tmp_path/'runs')
     assert clean.exit_code()==0,clean.results[0].reason
+
+
+def test_bounded_header_policy_checks_control_and_clean_target(tmp_path):
+    from autotest_skill.demo import start_demo
+    for defects in (False,True):
+        with start_demo(defects=defects) as (base,_):
+            data={'project':'headers','allowed_origins':[base],'budgets':{'retries':0},'checks':[{
+                'id':'headers.policy','kind':'security','requirement':'SEC-HEADERS','oracle':'Response has the declared nosniff header',
+                'spec':{'tool':'web_headers','base_url':base,'path':'/health'}}]}
+            report,_=run_config(Config.model_validate(data),tmp_path,tmp_path/'runs')
+            assert report.results[0].status==('failed' if defects else 'passed')
+            assert report.results[0].actual['not_evaluated']

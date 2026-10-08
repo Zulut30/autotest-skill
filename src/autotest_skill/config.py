@@ -42,6 +42,7 @@ class HttpSpec(StrictModel):
     expected_status: int = Field(default=200, ge=100, le=599)
     expected_json: dict[str, Any] | None = None
     expected_text: str | None = None
+    expected_headers: dict[str,str] = Field(default_factory=dict)
     headers: dict[str, str] = Field(default_factory=dict)
     headers_env: dict[str, str] = Field(default_factory=dict)
     headers_from: dict[str, str] = Field(default_factory=dict)
@@ -174,6 +175,7 @@ class PerformanceSpec(StrictModel):
 
 class SecuritySpec(StrictModel):
     tool: Literal["secrets", "dependencies", "semgrep", "gitleaks", "web_headers"] = "secrets"
+    required_headers: dict[str,str] = Field(default_factory=lambda:{"x-content-type-options":"nosniff"})
     path: str = "."
     base_url: str | None = None
     timeout: float = Field(default=120, gt=0, le=600)

@@ -1,6 +1,8 @@
 """Explicit safe scanners with conservative scope and sanitized findings."""
 
 import json
+import httpx
+from ..policy import request_url
 import re
 from pathlib import Path
 from ..artifacts import safe_file,write_json
@@ -11,7 +13,24 @@ from ..tooling import binary
 
 def run(check,context):
     spec=check.spec
-    target=safe_file(context.root,spec.path)
+    if spec.tool=='web_headers':
+        if not spec.base_url:raise Blocked('Web header checks require an explicit allowed origin')
+        url=request_url(context.config,spec.base_url,spec.path)
+        context.consume('requests')
+        try:
+            with httpx.Client(timeout=min(spec.timeout,context.remaining()),follow_redirects=False) as client:
+                with client.stream('GET',url) as response:
+                    headers=dict(response.headers);code=response.status_code
+        except httpx.HTTPError as exc:raise Blocked('Web header target is unavailable') from exc
+        if code!=200:raise Blocked('Header check requires a successful target response')
+        findings=[{'rule':'required-response-header','header':key,'expected':value,'actual':headers.get(key.lower()),
+            'classification':'potential_issue','applicability':'Configured response header differs; assess deployment and threat model.'}
+            for key,value in spec.required_headers.items() if headers.get(key.lower())!=value]
+        actual={'tool':spec.tool,'findings':findings,'scope':'Declared response headers only; injection and session exploitation not inferred',
+            'not_evaluated':['All routes','Third-party services','Undeclared response headers']}
+        artifact=f'{check.id}.security.json';write_json(context.folder,artifact,actual,context.redactor)
+        return context.result(check,'failed' if findings else 'passed',actual=actual,evidence=[artifact],reason='Response header policy differs' if findings else '')
+    target=context.root.resolve() if spec.path=='.' else safe_file(context.root,spec.path)
     if not target.exists():raise Blocked('Configured scan target does not exist')
     if spec.tool=='secrets':actual=scan(context.root,target,context.redactor)
     elif spec.tool=='dependencies':

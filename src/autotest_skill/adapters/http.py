@@ -51,9 +51,10 @@ def run(check, context):
                     payload = None
                 text = content.decode(errors="replace")
                 status_code = response.status_code
+                observed_headers = dict(response.headers)
     except (httpx.ConnectError, httpx.TimeoutException) as exc:
         raise Blocked(f"Target unavailable: {type(exc).__name__}") from exc
-    matches = status_code == spec.expected_status
+    matches = status_code == spec.expected_status and all(observed_headers.get(key.lower()) == value for key,value in spec.expected_headers.items())
     if spec.expected_json is not None:
         matches = matches and subset(spec.expected_json, payload)
     if spec.expected_text is not None:
@@ -73,7 +74,8 @@ def run(check, context):
             context.variables[name] = value
             context.redactor.add(value)
     actual = {"status": status_code, "json": payload} if payload is not None else {"status": status_code, "text": text[:20000]}
-    expected = {"status": spec.expected_status, "json": spec.expected_json, "text": spec.expected_text}
+    actual["headers"] = {key:observed_headers.get(key.lower()) for key in spec.expected_headers}
+    expected = {"headers":spec.expected_headers,"status": spec.expected_status, "json": spec.expected_json, "text": spec.expected_text}
     artifact = f"{check.id}.http.json"
     write_json(context.folder, artifact, {"url": url, "method": spec.method, "expected": expected,
                "actual": actual, "contract_errors": contract_errors}, context.redactor)
