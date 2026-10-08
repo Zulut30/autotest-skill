@@ -26,6 +26,10 @@ def run(check, context):
     from selenium.webdriver.support.ui import WebDriverWait
 
     spec = check.spec
+    if spec.baseline:
+        raise Blocked(
+            "Android image baselines are not supported; use explicit native UI assertions"
+        )
     require_url(context.config, spec.server_url)
     context.consume("requests")
     try:
@@ -147,12 +151,16 @@ def run(check, context):
                         else "new UiSelector().resourceId(" + json.dumps(action.resource_id) + ")"
                     )
                 )
-                call(
-                    driver.find_element,
-                    AppiumBy.ANDROID_UIAUTOMATOR,
-                    "new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView("
-                    + selector
-                    + ")",
+                WebDriverWait(
+                    driver, min(spec.wait_timeout, context.remaining()), poll_frequency=0.25
+                ).until(
+                    lambda _, selector=selector: call(
+                        driver.find_element,
+                        AppiumBy.ANDROID_UIAUTOMATOR,
+                        "new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView("
+                        + selector
+                        + ")",
+                    )
                 )
             elif action.action == "screenshot":
                 pass
@@ -186,6 +194,16 @@ def run(check, context):
         status, reason = "blocked", context.redactor.text(str(exc))
     except (AssertionError, TimeoutException, NoSuchElementException) as exc:
         status, reason = "failed", f"Native UI oracle was not satisfied ({type(exc).__name__})"
+        if driver is not None:
+            try:
+                alerts = call(driver.find_elements, AppiumBy.ID, "android:id/alertTitle")
+                if any(
+                    call(lambda alert=alert: alert.text) == "System UI has stopped"
+                    for alert in alerts
+                ):
+                    status, reason = "error", "Android System UI crashed during the scenario"
+            except (WebDriverException, ReadTimeoutError, ConnectTimeoutError, Blocked):
+                actual["infrastructure_diagnostic_unavailable"] = True
     except (ReadTimeoutError, ConnectTimeoutError):
         status, reason = "blocked", "Appium transport exceeded its bounded timeout"
     except WebDriverException as exc:
