@@ -85,6 +85,8 @@ def run_config(config, root, output, profile="smoke", changed_files=(), config_d
                    "budget_used": context.counters}, context.redactor)
         from .reproduction import collect
         collect(config,report,Path(root),folder,context.redactor)
+        from .reporting import render
+        render(report,folder)
     return report, folder
 
 
