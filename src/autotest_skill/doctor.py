@@ -6,6 +6,9 @@ import shutil
 import sys
 from pathlib import Path
 
+from .errors import Blocked
+from .tooling import binary
+
 
 def browser_path():
     configured = os.environ.get("AUTOTEST_BROWSER_PATH")
@@ -19,10 +22,13 @@ def diagnose(probe_browser=False):
         name: importlib.util.find_spec(name) is not None
         for name in ("httpx", "pydantic", "yaml", "playwright", "aiogram", "telethon", "appium")
     }
-    tools = {
-        name: shutil.which(name) is not None
-        for name in ("uv", "k6", "semgrep", "gitleaks", "adb", "appium")
-    }
+    tools = {}
+    for name in ("uv", "k6", "semgrep", "gitleaks", "adb", "appium"):
+        try:
+            binary(name)
+            tools[name] = True
+        except Blocked:
+            tools[name] = False
     result = {
         "python": f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}",
         "core_ready": all(packages[name] for name in ("httpx", "pydantic", "yaml")),

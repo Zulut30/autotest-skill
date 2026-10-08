@@ -12,6 +12,7 @@ def build_parser():
     parser = argparse.ArgumentParser(prog="autotest", description="Evidence-based agent checks")
     parser.add_argument("--version", action="version", version=__version__)
     commands = parser.add_subparsers(dest="command", required=True)
+    commands.add_parser("skill", help="Locate the packaged agent skill and reference files")
     doctor = commands.add_parser("doctor", help="Inspect installed capabilities without secrets")
     doctor.add_argument("--probe-browser", action="store_true")
     discover = commands.add_parser("discover", help="Inspect repository metadata")
@@ -43,6 +44,16 @@ def build_parser():
 def main(argv=None):
     args = build_parser().parse_args(argv)
     try:
+        if args.command == "skill":
+            from pathlib import Path
+
+            bundled = Path(__file__).parent / "skill" / "SKILL.md"
+            source = Path(__file__).resolve().parents[2] / "SKILL.md"
+            path = bundled if bundled.is_file() else source
+            if not path.is_file():
+                raise ValueError("Skill resources missing")
+            print(json.dumps({"skill": str(path), "resource_root": str(path.parent)}))
+            return 0
         if args.command == "doctor":
             from .doctor import diagnose
 

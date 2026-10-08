@@ -1,0 +1,81 @@
+{
+  "version": "0.1.0a1",
+  "status": "alpha",
+  "license": "MIT",
+  "archive_checks": "passed",
+  "artifacts": [
+    {
+      "file": "autotest_agent_skill-0.1.0a1-py3-none-any.whl",
+      "sha256": "783f70f1b0dab40a4b7b011eff46f5445d1260ec54d3c821e12e021578db5c13",
+      "bytes": 298870
+    },
+    {
+      "file": "autotest_agent_skill-0.1.0a1.tar.gz",
+      "sha256": "0826ebe47d922a24f4c7f09bb630f991a81b125bc0d1f1ccc8d0b5dc347292d5",
+      "bytes": 415138
+    }
+  ],
+  "excluded": [
+    "Local caches",
+    "Credentials",
+    "Android signing key",
+    "Private runs"
+  ],
+  "wheel_probe": {
+    "working_directory": "/tmp",
+    "installed_package": "/tmp/autotest-wheel-review/lib/python3.12/site-packages/autotest_skill/__init__.py",
+    "benchmark_run_id": "20261008T005918Z-a253c17c1b60",
+    "metrics": {
+      "detected": 5,
+      "known_defects": 5,
+      "missed": [],
+      "critical_detected": 2,
+      "critical_known": 2,
+      "false_positives": 0,
+      "clean_controls": 5,
+      "critical_high_false_positives": 0,
+      "incomplete_pairs": 0,
+      "mandatory_benchmark_gates_passed": true,
+      "all_pairs_passed": true
+    },
+    "fixture_sha256": "bb1ec9f7ba143b5a101a75e92d396cdd251ffd6b52f7869e1514bfd05c9ff15a",
+    "installed_versions": {
+      "playwright": "1.63.0",
+      "pillow": "12.3.0",
+      "certifi": "2026.7.22",
+      "PyYAML": "6.0.3",
+      "aiohappyeyeballs": "2.7.1",
+      "aiohttp": "3.14.4",
+      "aiogram": "3.31.0",
+      "anyio": "4.15.1",
+      "pydantic": "2.13.5",
+      "magic-filter": "1.0.12",
+      "httpx": "0.28.1",
+      "referencing": "0.37.0",
+      "httpcore": "1.0.9",
+      "annotated-types": "0.8.0",
+      "jsonschema-specifications": "2025.9.1",
+      "aiosignal": "1.4.0",
+      "yarl": "1.25.1",
+      "idna": "3.20",
+      "pyee": "13.0.1",
+      "h11": "0.16.0",
+      "multidict": "6.9.1",
+      "rsa": "4.9.1",
+      "Telethon": "1.45.0",
+      "pyaes": "1.6.1",
+      "pyasn1": "0.6.4",
+      "propcache": "0.5.4",
+      "greenlet": "3.5.6",
+      "jsonschema": "4.26.0",
+      "rpds-py": "2026.9.1",
+      "typing-inspection": "0.4.4",
+      "autotest-agent-skill": "0.1.0a1",
+      "pydantic_core": "2.46.5",
+      "frozenlist": "1.8.0",
+      "typing_extensions": "4.16.0",
+      "aiofiles": "25.1.0",
+      "attrs": "26.1.0"
+    }
+  }
+}

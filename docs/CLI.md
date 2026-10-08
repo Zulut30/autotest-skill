@@ -1,6 +1,8 @@
 # CLI contract
 
-Commands: `doctor [--probe-browser]`, `discover [path]`, `validate CONFIG`, `plan CONFIG`, `run CONFIG`, `report RUN_DIRECTORY`, `benchmark`, `demo [--defects]`.
+Commands: `skill`, `doctor [--probe-browser]`, `discover [path]`, `validate CONFIG`, `plan CONFIG`, `run CONFIG`, `report RUN_DIRECTORY`, `benchmark`, `regression --case CASE --output PATH`, `demo [--defects]`.
+
+`skill` locates the installed agent instructions and bundled references. It does not execute product checks or register the skill with an agent host. Source/wheel installation details are in [DISTRIBUTION.md](DISTRIBUTION.md).
 
 Plans and runs accept `--profile smoke|changed|release` and repeated `--changed-file PATH`. Runs accept `--output DIRECTORY`. Each command supports `--help`. Paths are resolved from the documented working directory; configuration-relative project roots are explicit.
 
