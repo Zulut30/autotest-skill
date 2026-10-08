@@ -1,5 +1,6 @@
 """Native actions on an explicit isolated Appium device with bounded transport."""
 
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -68,12 +69,14 @@ def run(check, context):
             arguments.extend(["--ei", "transport_delay_ms", str(spec.fixture_delay_ms)])
         capabilities["appium:optionalIntentArguments"] = " ".join(arguments)
         capabilities["appium:forceAppLaunch"] = True
+    apk_sha256 = None
     if spec.apk:
         root = Path(context.root).resolve()
         apk = (root / spec.apk).resolve()
         if root not in apk.parents or not apk.is_file():
             raise Blocked("Configured APK is missing or outside the project")
         capabilities["appium:app"] = str(apk)
+        apk_sha256 = hashlib.sha256(apk.read_bytes()).hexdigest()
         capabilities["appium:enforceAppInstall"] = True
     client = AppiumClientConfig(
         remote_server_addr=spec.server_url,
@@ -87,6 +90,10 @@ def run(check, context):
         "device": spec.udid,
         "request_budget_scope": "Explicit Appium operations; downstream protocol frames are not counted.",
     }
+    if apk_sha256:
+        actual["apk_sha256"] = apk_sha256
+    else:
+        actual["apk_identity"] = "Preinstalled package; binary fingerprint was not supplied"
     evidence = []
     status, reason = "passed", ""
 

@@ -46,11 +46,14 @@ def native_case(step, actions, **options):
     )
 
 
-def execute_native(step, actions, **options):
+def execute_native(step, actions, *, expected_status="passed", **options):
     report, folder = run_config(
         native_case(step, actions, **options), ROOT, ROOT / ".autotest/native-runs"
     )
-    assert report.exit_code() == 0, (
+    assert (
+        report.results[0].status == expected_status
+        and report.exit_code() == {"passed": 0, "failed": 1}[expected_status]
+    ), (
         report.results[0].reason,
         report.results[0].actual,
         str(folder),
@@ -62,6 +65,7 @@ def execute_native(step, actions, **options):
                 "target_revision": report.target_revision,
                 "target_dirty": report.target_dirty,
                 "status": report.results[0].status,
+                "expected_status": expected_status,
                 "actual": report.results[0].actual,
                 "directory": str(folder),
             },

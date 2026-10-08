@@ -1,0 +1,34 @@
+{
+  "run_id": "20261008T005216Z-83fb28367ff3",
+  "target_revision": "2d2dd086fb61fe885fbc755e7ec95f04edfed0a2",
+  "target_dirty": true,
+  "status": "failed",
+  "expected_status": "failed",
+  "actual": {
+    "device": "emulator-5554",
+    "request_budget_scope": "Explicit Appium operations; downstream protocol frames are not counted.",
+    "apk_sha256": "f341da3c934c1d12af5c47daa7e5cc7fcff4741b6cbd4b03fe388bf524257382",
+    "platform_version": "8.0.0",
+    "last_action": 16,
+    "assertions": [
+      {
+        "locator": "Status",
+        "expected": "Signed in as alice",
+        "observed": "Signed in as alice"
+      },
+      {
+        "locator": "Status",
+        "expected": "Saved",
+        "observed": "Saved"
+      },
+      {
+        "locator": "Items",
+        "expected": "Alice item \u00d7 1\nNative E2E work \u00d7 2",
+        "observed": "Alice item \u00d7 1"
+      }
+    ]
+  },
+  "directory": "/workspace/autotest-skill/.autotest/native-runs/20261008T005216Z-83fb28367ff3",
+  "backend_items": [],
+  "false_saved_feedback_observed": true
+}

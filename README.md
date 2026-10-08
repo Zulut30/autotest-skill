@@ -42,7 +42,7 @@ Exit codes: `0` passed, `1` failed/flaky, `2` blocked or no checks executed, `3`
 | API/backend | HTTPX, local OpenAPI, existing pytest/JUnit | Login/logout, roles, ownership, boundaries, concurrency and dependency recovery |
 | Web | Real Chromium, Playwright, axe-core, PNG comparison | Persisted user flow, error feedback, responsive layout, accessibility, explicit visual baselines and UX observations |
 | Telegram | Real aiogram dispatcher/FSM and authenticated webhook fixture | Dialogs, callbacks, cancellation, duplicate updates and user isolation with recording transport |
-| Android | Appium/UiAutomator2 and signed Java fixture | Actual APK installation and semantic screen assertion on Android 8.0/API26 x86; further scenario evidence is tracked in the roadmap |
+| Android | Appium/UiAutomator2 and signed Java fixture | Actual API26 x86 APK install, login/forms/roles, permission denial, lifecycle, transport recovery, rotation/keyboard and save/reopen with backend evidence |
 | Performance | Bounded k6 or HTTP experiments; browser lab timings | Explicit thresholds, compatible baseline and independent regression replay |
 | Security | pip-audit, local Semgrep rules, Gitleaks, bounded source/header scans | Locations and applicability notes; scanner warnings stay potential issues |
 
