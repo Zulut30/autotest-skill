@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "measured_cases": [
+    {"id":"api-idor","check":"api.foreign-object","target":"loopback API","severity":"critical","requirement":"API-OWNERSHIP","oracle":"Alice gets 403 for Bob's item","defect":"Ownership guard bypassed","impact":"Disclosure of another user's object"},
+    {"id":"web-false-save","check":"web.persist","target":"real Chromium","severity":"high","requirement":"WEB-SAVE","oracle":"Saved item survives reopening and exists on backend","defect":"Success feedback without POST","impact":"User loses work despite success feedback"},
+    {"id":"web-overflow","check":"web.layout","target":"real Chromium","severity":"medium","requirement":"WEB-LAYOUT","oracle":"Document fits 360px viewport","defect":"Forced 1800px content width","impact":"Mobile content requires horizontal scrolling"},
+    {"id":"web-missing-label","check":"web.axe","target":"real Chromium with axe-core","severity":"medium","requirement":"WEB-A11Y","oracle":"Automated accessibility scan has no label violations","defect":"Unlabelled input","impact":"Assistive technology cannot name the control"},
+    {"id":"telegram-state-leak","check":"bot.isolation","target":"real aiogram handlers, recording transport","severity":"critical","requirement":"TG-ISOLATION","oracle":"Second user's FSM state stays independent","defect":"Storage keys ignore user/chat identity","impact":"Cross-user state interference"}
+  ],
+  "not_measured": [
+    {"id":"android-false-save","reason":"APK built; actual native execution remains a release gate"},
+    {"id":"live-telegram-delivery","reason":"Requires authorized bot and real test-user credentials"},
+    {"id":"ux-placeholder-copy","reason":"UX observation; excluded from confirmed-defect metrics"}
+  ],
+  "limitations": "Small synthetic corpus, not an estimate of general bug recall or tester replacement. All critical seeded cases in measured_cases are mandatory."
+}
