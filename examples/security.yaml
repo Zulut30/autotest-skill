@@ -1,0 +1,14 @@
+version: 1
+project: declared-response-header-policy
+project_root: ..
+allowed_origins: [http://127.0.0.1:8765]
+checks:
+  - id: security.headers
+    kind: security
+    requirement: SEC-HEADERS
+    oracle: Health response contains the declared nosniff policy header.
+    spec:
+      tool: web_headers
+      base_url: http://127.0.0.1:8765
+      path: /health
+      required_headers: {x-content-type-options: nosniff}

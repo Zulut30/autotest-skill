@@ -1,0 +1,38 @@
+version: 1
+project: actual-native-demo
+project_root: ..
+allowed_origins: [http://127.0.0.1:4723]
+allow_mutations: true
+budgets: {seconds: 600, retries: 0, max_requests: 1000}
+checks:
+  - id: native.saved-item
+    kind: android
+    mutating: true
+    severity: high
+    impact: A saved item must survive navigation and appear in the backend list.
+    requirement: APP-SAVE
+    oracle: Installed native app signs in saves one item and displays it on the items screen.
+    spec:
+      udid: emulator-5554
+      package: com.autotest.demo
+      activity: .MainActivity
+      apk: .autotest/android-build/autotest-demo.apk
+      reset: true
+      timeout: 300
+      wait_timeout: 20
+      actions:
+        - {action: expect_text, text: Autotest Demo}
+        - {action: click, accessibility_id: Sign in}
+        - {action: scroll_to, accessibility_id: Status}
+        - {action: expect_text, accessibility_id: Status, value: Signed in as alice}
+        - {action: scroll_to, accessibility_id: Name}
+        - {action: fill, accessibility_id: Name, value: Native example work}
+        - {action: hide_keyboard}
+        - {action: scroll_to, accessibility_id: Save}
+        - {action: click, accessibility_id: Save}
+        - {action: scroll_to, accessibility_id: Status}
+        - {action: expect_text, accessibility_id: Status, value: Saved}
+        - {action: scroll_to, accessibility_id: View items}
+        - {action: click, accessibility_id: View items}
+        - {action: expect_text, text: Saved items}
+        - {action: expect_text, accessibility_id: Items, value: "Alice item × 1\nNative example work × 1"}

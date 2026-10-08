@@ -1,0 +1,69 @@
+{
+  "runs": [
+    {
+      "example": "api.yaml",
+      "run_id": "20261008T003345Z-bb1dc50dcd57",
+      "exit_code": 0,
+      "counts": {
+        "passed": 4
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003345Z-bb1dc50dcd57"
+    },
+    {
+      "example": "web.yaml",
+      "run_id": "20261008T003345Z-bf8b68cb1ab5",
+      "exit_code": 0,
+      "counts": {
+        "passed": 4
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003345Z-bf8b68cb1ab5"
+    },
+    {
+      "example": "telegram.yaml",
+      "run_id": "20261008T003349Z-ddd31fc9afd1",
+      "exit_code": 0,
+      "counts": {
+        "passed": 5
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003349Z-ddd31fc9afd1"
+    },
+    {
+      "example": "performance.yaml",
+      "run_id": "20261008T003351Z-8cf1aea76da3",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003351Z-8cf1aea76da3"
+    },
+    {
+      "example": "security.yaml",
+      "run_id": "20261008T003352Z-657a4bf4eaf6",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003352Z-657a4bf4eaf6"
+    },
+    {
+      "example": "android.yaml",
+      "run_id": "20261008T003352Z-244b33d167e4",
+      "exit_code": 0,
+      "counts": {
+        "passed": 1
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003352Z-244b33d167e4"
+    },
+    {
+      "example": "telegram-live.yaml",
+      "run_id": "20261008T003434Z-e69d8a4d9a66",
+      "exit_code": 2,
+      "counts": {
+        "blocked": 1
+      },
+      "directory": "/workspace/autotest-skill/.autotest/example-runs/20261008T003434Z-e69d8a4d9a66"
+    }
+  ],
+  "live_telegram_validated": false,
+  "dataset": "Each example owns a fresh independent fixture"
+}

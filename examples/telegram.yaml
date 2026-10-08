@@ -1,0 +1,32 @@
+version: 1
+project: local-aiogram-demo
+project_root: ..
+budgets: {seconds: 90, retries: 0}
+checks:
+  - id: bot.start
+    kind: telegram
+    requirement: TG-COMMANDS
+    oracle: Start help and unknown command replies follow the documented handler behavior.
+    spec: {mode: local, scenario: start}
+  - id: bot.dialog
+    kind: telegram
+    requirement: TG-DIALOG
+    oracle: Completed dialog persists one item and clears the user's state.
+    spec: {mode: local, scenario: dialog}
+  - id: bot.callbacks
+    kind: telegram
+    requirement: TG-CALLBACKS
+    oracle: Confirm cancel tampered and stale callbacks preserve declared effects.
+    spec: {mode: local, scenario: callback}
+  - id: bot.isolation
+    kind: telegram
+    severity: critical
+    impact: A user's dialog must not change another user's state.
+    requirement: TG-ISOLATION
+    oracle: Two users keep independent FSM state.
+    spec: {mode: local, scenario: isolation}
+  - id: bot.duplicate
+    kind: telegram
+    requirement: TG-DELIVERY
+    oracle: Repeated update identity produces exactly one saved effect.
+    spec: {mode: local, scenario: duplicate}

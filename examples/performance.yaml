@@ -1,0 +1,19 @@
+version: 1
+project: bounded-loopback-load
+project_root: ..
+allowed_origins: [http://127.0.0.1:8765]
+budgets: {seconds: 90, max_requests: 100, retries: 0}
+checks:
+  - id: load.health
+    kind: performance
+    requirement: PERF-HEALTH
+    oracle: Measured requests have zero non-200 responses and p95 below the lab threshold.
+    spec:
+      engine: k6
+      base_url: http://127.0.0.1:8765
+      path: /health
+      requests: 20
+      warmup: 5
+      concurrency: 2
+      max_p95_ms: 1000
+      max_error_rate: 0
