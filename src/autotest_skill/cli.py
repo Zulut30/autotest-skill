@@ -28,6 +28,9 @@ def build_parser():
     report.add_argument("run_directory")
     benchmark = commands.add_parser("benchmark", help="Exercise seeded defects and clean controls")
     benchmark.add_argument("--output", default=".autotest/benchmark")
+    regression=commands.add_parser('regression',help='Propose a regression test for a confirmed seeded case')
+    regression.add_argument('--case',required=True)
+    regression.add_argument('--output',required=True)
     demo = commands.add_parser("demo", help="Start the isolated demonstration target")
     demo.add_argument("--port", type=int, default=8765)
     demo.add_argument("--defects", action="store_true")
@@ -43,7 +46,7 @@ def main(argv=None):
             print(json.dumps(result, indent=2))
             return 0 if result["core_ready"] else 2
         modules = {"discover": "discovery", "validate": "config", "plan": "planner",
-                   "run": "runner", "report": "reporting", "benchmark": "benchmark", "demo": "demo"}
+                   "run": "runner", "report": "reporting", "benchmark": "benchmark", "demo": "demo", "regression":"regression"}
         try:
             handler = importlib.import_module(f"autotest_skill.{modules[args.command]}")
         except ModuleNotFoundError as exc:
