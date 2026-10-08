@@ -36,6 +36,18 @@
           "title": "Severity",
           "type": "string"
         },
+        "impact": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impact"
+        },
         "elapsed_ms": {
           "default": 0,
           "title": "Elapsed Ms",

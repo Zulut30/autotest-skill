@@ -15,6 +15,7 @@ class CheckResult(StrictModel):
     oracle: str
     requirement: str
     severity: str = "medium"
+    impact: str | None = None
     elapsed_ms: float = 0
     expected: Any = None
     actual: Any = None

@@ -216,6 +216,7 @@ class Check(StrictModel):
     oracle: str = Field(min_length=10)
     requirement: str = Field(min_length=1)
     severity: Literal["critical", "high", "medium", "low", "info"] = "medium"
+    impact: str | None = Field(default=None,min_length=10,max_length=1000)
     profiles: list[Literal["smoke", "changed", "release"]] = Field(default_factory=lambda: ["smoke", "changed", "release"])
     tags: list[str] = Field(default_factory=list)
     covers: list[str] = Field(default_factory=list)

@@ -34,4 +34,4 @@ class Context:
 
     def result(self, check, status, **details):
         return CheckResult(id=check.id, kind=check.kind, status=status, oracle=check.oracle,
-                           requirement=check.requirement, severity=check.severity, **details)
+                           requirement=check.requirement, severity=check.severity, impact=check.impact, **details)

@@ -7,6 +7,7 @@ import re
 from pathlib import Path
 from urllib.parse import quote
 from .artifacts import safe_file
+from .artifacts import write_json
 from .results import RunReport
 from .secrets import Redactor
 
@@ -17,11 +18,16 @@ def escape(value):
 
 def render(report,folder):
     redactor=Redactor();report=RunReport.model_validate(redactor.clean(report.model_dump()))
+    from .triage import analyze
+    triage=analyze(report)
+    write_json(folder,'triage.json',triage,redactor)
     lines=[f'# Autotest report: {escape(report.project)}','',f'Run `{escape(report.run_id)}` · profile `{escape(report.profile)}` · exit {report.exit_code()}',
         '',f'Version `{escape(report.tool_version)}` · target revision `{escape(report.target_revision or "unknown")}` · working tree dirty: {report.target_dirty}',
         '',f'Counts: {escape(json.dumps(report.counts(),sort_keys=True))}',
         '','Only executed declared oracles establish a result. Blocked/skipped checks remain unverified; observations require product review.',
         '','| Check | Status | Severity | Requirement | Reason |','| --- | --- | --- | --- | --- |']
+    if triage['findings']:
+        lines+=['',f"Prioritized finding groups: {len(triage['findings'])}. Inspect `triage.json` for impact and exact grouping.",'']
     for result in report.results:
         status=result.status+(' (flaky)' if result.flaky else '')
         lines.append('| '+' | '.join(escape(value) for value in (result.id,status,result.severity,result.requirement,result.reason))+' |')
