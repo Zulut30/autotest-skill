@@ -1,0 +1,86 @@
+{
+  "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490",
+  "synthetic_demo_gate_passed": true,
+  "rows": [
+    {
+      "target": "web",
+      "mode": "clean",
+      "expected_detector_status": "passed",
+      "actual_status": "passed",
+      "reason": "",
+      "demonstration_matched": true,
+      "run_id": "20261008T010125Z-9df600c4497d",
+      "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490/runs/20261008T010125Z-9df600c4497d",
+      "backend_items": null,
+      "transport": "real browser/native UI and HTTP"
+    },
+    {
+      "target": "web",
+      "mode": "broken",
+      "expected_detector_status": "failed",
+      "actual_status": "failed",
+      "reason": "Browser oracle was not satisfied (AssertionError)",
+      "demonstration_matched": true,
+      "run_id": "20261008T010127Z-7033a1d023c6",
+      "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490/runs/20261008T010127Z-7033a1d023c6",
+      "backend_items": null,
+      "transport": "real browser/native UI and HTTP"
+    },
+    {
+      "target": "telegram",
+      "mode": "clean",
+      "expected_detector_status": "passed",
+      "actual_status": "passed",
+      "reason": "",
+      "demonstration_matched": true,
+      "run_id": "20261008T010134Z-ca82c7347c46",
+      "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490/runs/20261008T010134Z-ca82c7347c46",
+      "backend_items": null,
+      "transport": "local aiogram recording transport"
+    },
+    {
+      "target": "telegram",
+      "mode": "broken",
+      "expected_detector_status": "failed",
+      "actual_status": "failed",
+      "reason": "Bot replies, states or side effects violate the declared scenario",
+      "demonstration_matched": true,
+      "run_id": "20261008T010136Z-ab9f793b6911",
+      "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490/runs/20261008T010136Z-ab9f793b6911",
+      "backend_items": null,
+      "transport": "local aiogram recording transport"
+    },
+    {
+      "target": "android",
+      "mode": "clean",
+      "expected_detector_status": "passed",
+      "actual_status": "passed",
+      "reason": "",
+      "demonstration_matched": true,
+      "run_id": "20261008T010136Z-7841eb091ce4",
+      "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490/runs/20261008T010136Z-7841eb091ce4",
+      "backend_items": [
+        {
+          "id": 3,
+          "owner": "alice",
+          "name": "Native example work",
+          "quantity": 1
+        }
+      ],
+      "transport": "real browser/native UI and HTTP"
+    },
+    {
+      "target": "android",
+      "mode": "broken",
+      "expected_detector_status": "failed",
+      "actual_status": "failed",
+      "reason": "Native UI oracle was not satisfied (TimeoutException)",
+      "demonstration_matched": true,
+      "run_id": "20261008T010229Z-8fc34ded7626",
+      "directory": "/workspace/autotest-skill/.autotest/demos/20261008T010125Z-c2c88aaf3490/runs/20261008T010229Z-8fc34ded7626",
+      "backend_items": [],
+      "transport": "real browser/native UI and HTTP"
+    }
+  ],
+  "live_telegram_validated": false
+}
