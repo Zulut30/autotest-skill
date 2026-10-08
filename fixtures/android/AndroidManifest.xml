@@ -1,4 +1,4 @@
-<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.autotest.demo">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.autotest.demo" android:versionCode="2" android:versionName="0.1.0-fixture.2">
   <uses-sdk android:minSdkVersion="26" android:targetSdkVersion="30" />
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.RECORD_AUDIO" />

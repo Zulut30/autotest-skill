@@ -231,7 +231,7 @@ class AndroidSpec(StrictModel):
     server_url: str = "http://127.0.0.1:4723"
     apk: str | None = None
     udid: str = Field(pattern=r"^[A-Za-z0-9_.:-]{1,128}$")
-    reset: bool = True
+    reset: bool = False
     reuse_runtime: bool = False
     package: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$")
     activity: str = Field(pattern=r"^[.A-Za-z][.A-Za-z0-9_$]*$")
@@ -345,6 +345,7 @@ class Config(StrictModel):
                     raise ValueError("Native checks need a semantic assertion")
                 if (
                     spec.apk
+                    or spec.reset
                     or any(
                         a.action
                         in {"click", "fill", "back", "background", "restart", "set_network"}

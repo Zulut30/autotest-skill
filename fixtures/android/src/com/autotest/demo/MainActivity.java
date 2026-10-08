@@ -42,6 +42,8 @@ public class MainActivity extends Activity {
             preferences.edit().putString("base",base.getText().toString()).apply();
             Intent intent=new Intent(this,ItemsActivity.class); startActivity(intent);
         });
+        button(layout,"Check admin access",() -> admin());
+        button(layout,"Sign out",() -> logout());
         button(layout,"Request microphone",() -> requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},7));
         status=new TextView(this);status.setContentDescription("Status");status.setTextSize(17);layout.addView(status);
         status.setText(preferences.contains("authorization")?"Session restored":"Please sign in");
@@ -85,9 +87,32 @@ public class MainActivity extends Activity {
                 if(!defects)request(address,"/api/items","POST",new JSONObject().put("name",item).put("quantity",count),preferences.getString("authorization",null));
                 preferences.edit().putString("base",address).apply();
                 show("Saved");
+            } catch(HttpFailure error){
+                if(error.code==401){preferences.edit().remove("authorization").apply();show("Session expired. Sign in again.");}
+                else show("Could not save. Check network and try again.");
             } catch(Exception error){show("Could not save. Check network and try again.");}
             finally{saving.set(false);}
         }).start();
+    }
+    void admin() {
+        final String address=base.getText().toString(),auth=preferences.getString("authorization",null);
+        new Thread(() -> {
+            try {request(address,"/api/admin","GET",null,auth);show("Admin allowed");}
+            catch(HttpFailure error){show(error.code==403?"Admin denied":error.code==401?"Please sign in":"Admin unavailable");}
+            catch(Exception error){show("Admin unavailable");}
+        }).start();
+    }
+    void logout() {
+        final String address=base.getText().toString(),auth=preferences.getString("authorization",null);
+        preferences.edit().remove("authorization").apply();
+        new Thread(() -> {
+            try {request(address,"/api/logout","POST",new JSONObject(),auth);show("Signed out");}
+            catch(Exception error){show("Signed out locally; server logout failed.");}
+        }).start();
+    }
+    static class HttpFailure extends IOException {
+        final int code;
+        HttpFailure(int code){super("HTTP response failed");this.code=code;}
     }
     public void onRequestPermissionsResult(int code,String[] permissions,int[] results) {
         super.onRequestPermissionsResult(code,permissions,results);
@@ -103,7 +128,8 @@ public class MainActivity extends Activity {
         try {
             if(body!=null){connection.setDoOutput(true);try(OutputStream out=connection.getOutputStream()){out.write(body.toString().getBytes("UTF-8"));}}
             int status=connection.getResponseCode();
-            if(status<200||status>=300)throw new IOException("HTTP response failed");
+            if(status<200||status>=300)throw new HttpFailure(status);
+            if(status==204)return new JSONObject();
             try(InputStream in=connection.getInputStream();ByteArrayOutputStream out=new ByteArrayOutputStream()) {
                 byte[] buffer=new byte[4096];int count;
                 while((count=in.read(buffer))!=-1){if(out.size()+count>1000000)throw new IOException("Response too large");out.write(buffer,0,count);}

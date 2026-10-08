@@ -34,6 +34,7 @@ def native_case(step, actions, **options):
                         "package": "com.autotest.demo",
                         "activity": ".MainActivity",
                         "reuse_runtime": True,
+                        "reset": True,
                         "timeout": 300,
                         "wait_timeout": 20,
                         "actions": actions,

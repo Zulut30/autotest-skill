@@ -10,6 +10,7 @@ from urllib3.exceptions import ConnectTimeoutError, ReadTimeoutError
 from ..artifacts import safe_file, write_json
 from ..errors import Blocked
 from ..policy import require_url
+from ..secrets import SENSITIVE
 
 
 def run(check, context):
@@ -61,6 +62,7 @@ def run(check, context):
         if root not in apk.parents or not apk.is_file():
             raise Blocked("Configured APK is missing or outside the project")
         capabilities["appium:app"] = str(apk)
+        capabilities["appium:enforceAppInstall"] = True
     client = AppiumClientConfig(
         remote_server_addr=spec.server_url, timeout=min(spec.timeout, context.remaining())
     )
@@ -159,6 +161,10 @@ def run(check, context):
                 if action.action == "click":
                     call(element.click)
                 elif action.action == "fill":
+                    if SENSITIVE.search(
+                        action.accessibility_id or action.resource_id or action.text or ""
+                    ):
+                        context.redactor.add(value)
                     call(element.clear)
                     call(element.send_keys, value or "")
                 elif action.action == "expect_text" and value is not None:
@@ -193,7 +199,14 @@ def run(check, context):
             client.timeout = 5
             image = f"{check.id}.png"
             try:
-                if any(a.value_env for a in spec.actions):
+                if any(
+                    a.value_env
+                    or (
+                        a.action == "fill"
+                        and SENSITIVE.search(a.accessibility_id or a.resource_id or a.text or "")
+                    )
+                    for a in spec.actions
+                ):
                     raise Blocked("Screenshot withheld because secret-bound actions were used")
                 driver.save_screenshot(str(safe_file(context.folder, image)))
                 os.chmod(safe_file(context.folder, image), 0o600)
