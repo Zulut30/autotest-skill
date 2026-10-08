@@ -1,0 +1,65 @@
+{
+  "repetitions": 5,
+  "status_agreement": true,
+  "runs": [
+    {
+      "index": 1,
+      "run_id": "20261008T000636Z-9816516abfb5",
+      "revision": "3b0eefe1d0ac6ef55851e5b2a1fa3fdec1e60de1",
+      "statuses": {
+        "api.ready": "passed",
+        "web.ready": "passed",
+        "bot.ready": "passed"
+      },
+      "elapsed_ms": 3017.4105580008472
+    },
+    {
+      "index": 2,
+      "run_id": "20261008T000639Z-054a7e4f58ff",
+      "revision": "3b0eefe1d0ac6ef55851e5b2a1fa3fdec1e60de1",
+      "statuses": {
+        "api.ready": "passed",
+        "web.ready": "passed",
+        "bot.ready": "passed"
+      },
+      "elapsed_ms": 1031.4011179998488
+    },
+    {
+      "index": 3,
+      "run_id": "20261008T000640Z-0451ed9cd72d",
+      "revision": "3b0eefe1d0ac6ef55851e5b2a1fa3fdec1e60de1",
+      "statuses": {
+        "api.ready": "passed",
+        "web.ready": "passed",
+        "bot.ready": "passed"
+      },
+      "elapsed_ms": 1133.870560000105
+    },
+    {
+      "index": 4,
+      "run_id": "20261008T000642Z-773c8a84e2a9",
+      "revision": "3b0eefe1d0ac6ef55851e5b2a1fa3fdec1e60de1",
+      "statuses": {
+        "api.ready": "passed",
+        "web.ready": "passed",
+        "bot.ready": "passed"
+      },
+      "elapsed_ms": 1080.3507180007728
+    },
+    {
+      "index": 5,
+      "run_id": "20261008T000643Z-aa62e973aa2c",
+      "revision": "3b0eefe1d0ac6ef55851e5b2a1fa3fdec1e60de1",
+      "statuses": {
+        "api.ready": "passed",
+        "web.ready": "passed",
+        "bot.ready": "passed"
+      },
+      "elapsed_ms": 1081.124481000188
+    }
+  ],
+  "not_evaluated": [
+    "Live Telegram transport",
+    "Native Android lifecycle"
+  ]
+}

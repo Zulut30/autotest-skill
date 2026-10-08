@@ -3,8 +3,8 @@ from autotest_skill.runner import run_config
 
 
 def bot_config(scenario='start',**spec):
-    return Config.model_validate({'project':'bot','checks':[{'id':'bot.scenario','kind':'telegram',
-        'requirement':'TG-DIALOG','oracle':'Bot scenario matches documented replies, state and effects',
+    return Config.model_validate({'project':'bot','allow_mutations':spec.get('mode')=='live','checks':[{'id':'bot.scenario','kind':'telegram',
+        'mutating':spec.get('mode')=='live','requirement':'TG-DIALOG','oracle':'Bot scenario matches documented replies, state and effects',
         'spec':{'scenario':scenario,**spec}}]})
 
 

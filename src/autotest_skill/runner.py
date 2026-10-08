@@ -40,6 +40,11 @@ def run_config(config, root, output, profile="smoke", changed_files=(), config_d
                 attempts = []
                 result = None
                 for attempt in range(config.budgets.retries + 1):
+                    prefix = ""
+                    if attempt:
+                        prefix=f"attempts/{check.id}/{attempt+1}/"
+                        context.folder=folder/prefix
+                        context.folder.mkdir(parents=True,mode=0o700)
                     try:
                         context.consume("checks")
                         result = resolver(check.kind)(check, context)
@@ -51,11 +56,15 @@ def run_config(config, root, output, profile="smoke", changed_files=(), config_d
                         result = context.result(check, "blocked", reason="Command exceeded its time limit")
                     except Exception as exc:
                         result = context.result(check, "error", reason=f"Adapter execution error: {type(exc).__name__}")
-                    attempts.append({"attempt": attempt + 1, "status": result.status, "reason": result.reason})
+                    finally:
+                        context.folder=folder
+                    result.evidence=[prefix+name for name in result.evidence]
+                    attempts.append({"attempt": attempt + 1, "status": result.status, "reason": result.reason,
+                                     "actual":result.actual,"expected":result.expected,"evidence":list(result.evidence)})
                     if result.status != "failed" or check.mutating:
                         break
                 result.attempts = attempts
-                result.flaky = result.status == "passed" and any(a["status"] == "failed" for a in attempts)
+                result.flaky = result.flaky or (result.status == "passed" and any(a["status"] == "failed" for a in attempts))
             result.elapsed_ms = (time.monotonic() - started) * 1000
             report.results.append(result)
             completed[check.id] = result
