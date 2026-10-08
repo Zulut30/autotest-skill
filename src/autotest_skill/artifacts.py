@@ -4,14 +4,14 @@ import json
 import os
 import tempfile
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 
 def create_run(output):
     base = Path(output).resolve()
     base.mkdir(parents=True, exist_ok=True)
-    identifier = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:12]
+    identifier = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:12]
     folder = base / identifier
     folder.mkdir(mode=0o700)
     return identifier, folder

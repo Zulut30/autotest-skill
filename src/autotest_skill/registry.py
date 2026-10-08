@@ -2,18 +2,26 @@
 
 import importlib
 from typing import Protocol
-from .context import Context
+
 from .config import Check
-from .results import CheckResult
+from .context import Context
 from .errors import Blocked
+from .results import CheckResult
 
 
 class Adapter(Protocol):
     def __call__(self, check: Check, context: Context) -> CheckResult: ...
 
 
-ADAPTERS = {"http": "http", "command": "command", "web": "web", "telegram": "telegram",
-            "android": "android", "performance": "performance", "security": "security"}
+ADAPTERS = {
+    "http": "http",
+    "command": "command",
+    "web": "web",
+    "telegram": "telegram",
+    "android": "android",
+    "performance": "performance",
+    "security": "security",
+}
 
 
 def resolve(kind):

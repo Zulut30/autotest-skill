@@ -18,8 +18,10 @@ class State:
     def reset(self):
         with self.lock:
             self.sessions = {}
-            self.items = {1: {"id": 1, "owner": "alice", "name": "Alice item", "quantity": 1},
-                          2: {"id": 2, "owner": "bob", "name": "Bob item", "quantity": 1}}
+            self.items = {
+                1: {"id": 1, "owner": "alice", "name": "Alice item", "quantity": 1},
+                2: {"id": 2, "owner": "bob", "name": "Bob item", "quantity": 1},
+            }
             self.next_id = 3
             self.idempotency = {}
             self.dependency_down = False
@@ -32,7 +34,15 @@ def handler_for(state):
             pass
 
         def respond(self, status, body=None, content_type="application/json"):
-            content = b"" if body is None else (json.dumps(body).encode() if content_type == "application/json" else body.encode())
+            content = (
+                b""
+                if body is None
+                else (
+                    json.dumps(body).encode()
+                    if content_type == "application/json"
+                    else body.encode()
+                )
+            )
             self.send_response(status)
             self.send_header("Content-Type", content_type)
             self.send_header("Content-Length", str(len(content)))
@@ -43,7 +53,9 @@ def handler_for(state):
             self.wfile.write(content)
 
         def identity(self):
-            record = state.sessions.get(self.headers.get("Authorization", "").removeprefix("Bearer "))
+            record = state.sessions.get(
+                self.headers.get("Authorization", "").removeprefix("Bearer ")
+            )
             return record["user"] if record and record["expires"] > time.monotonic() else None
 
         def body(self):
@@ -52,7 +64,7 @@ def handler_for(state):
                 raise ValueError("oversized")
             value = json.loads(self.rfile.read(length))
             if not isinstance(value, dict):
-                raise ValueError("object required")
+                raise TypeError("object required")
             return value
 
         def do_GET(self):
@@ -62,26 +74,40 @@ def handler_for(state):
                     time.sleep(state.health_delay)
                     return self.respond(200, {"ready": True, "fixture": True})
                 if path == "/api/dependent":
-                    return self.respond(503 if state.dependency_down else 200, {"available": not state.dependency_down})
+                    return self.respond(
+                        503 if state.dependency_down else 200,
+                        {"available": not state.dependency_down},
+                    )
                 if path == "/openapi.json":
                     return self.respond(200, openapi())
                 if path == "/":
                     from pathlib import Path
+
                     page = Path(__file__).parent / "assets" / "demo.html"
                     if page.is_file():
                         html = page.read_text().replace("__DEFECTS__", str(state.defects).lower())
                         if state.defects:
-                            html = html.replace("</head>", "<style>main{width:1800px;max-width:none}</style></head>")
-                            html = html.replace("<main>", '<main><input id="unlabeled"><p>TODO: undefined lorem ipsum</p>')
+                            html = html.replace(
+                                "</head>", "<style>main{width:1800px;max-width:none}</style></head>"
+                            )
+                            html = html.replace(
+                                "<main>",
+                                '<main><input id="unlabeled"><p>TODO: undefined lorem ipsum</p>',
+                            )
                         return self.respond(200, html, "text/html; charset=utf-8")
                     return self.respond(200, {"fixture": True, "ready": True})
                 user = self.identity()
                 if not user:
                     return self.respond(401, {"error": "unauthorized"})
                 if path == "/api/me":
-                    return self.respond(200, {"username": user, "role": "admin" if user == "admin" else "user"})
+                    return self.respond(
+                        200, {"username": user, "role": "admin" if user == "admin" else "user"}
+                    )
                 if path == "/api/items":
-                    return self.respond(200, {"items": [item for item in state.items.values() if item["owner"] == user]})
+                    return self.respond(
+                        200,
+                        {"items": [item for item in state.items.values() if item["owner"] == user]},
+                    )
                 if path.startswith("/api/items/"):
                     try:
                         item = state.items[int(path.rsplit("/", 1)[1])]
@@ -101,7 +127,10 @@ def handler_for(state):
             with state.lock:
                 if path == "/api/login":
                     user = body.get("username")
-                    if user not in {"alice", "bob", "admin"} or body.get("password") != "demo-password":
+                    if (
+                        user not in {"alice", "bob", "admin"}
+                        or body.get("password") != "demo-password"
+                    ):
                         return self.respond(401, {"error": "invalid credentials"})
                     token = secrets.token_urlsafe(24)
                     state.sessions[token] = {"user": user, "expires": time.monotonic() + 300}
@@ -110,7 +139,9 @@ def handler_for(state):
                 if not user:
                     return self.respond(401, {"error": "unauthorized"})
                 if path == "/api/logout":
-                    state.sessions.pop(self.headers.get("Authorization", "").removeprefix("Bearer "), None)
+                    state.sessions.pop(
+                        self.headers.get("Authorization", "").removeprefix("Bearer "), None
+                    )
                     return self.respond(204)
                 if path.startswith("/__test/"):
                     if user != "admin":
@@ -123,7 +154,13 @@ def handler_for(state):
                         return self.respond(200, {"down": state.dependency_down})
                 if path == "/api/items":
                     name, quantity = body.get("name"), body.get("quantity")
-                    if not isinstance(name, str) or not name.strip() or len(name) > 100 or type(quantity) is not int or not 1 <= quantity <= 100:
+                    if (
+                        not isinstance(name, str)
+                        or not name.strip()
+                        or len(name) > 100
+                        or type(quantity) is not int
+                        or not 1 <= quantity <= 100
+                    ):
                         return self.respond(422, {"error": "invalid item"})
                     key = self.headers.get("Idempotency-Key")
                     if key and (user, key) in state.idempotency:
@@ -138,13 +175,35 @@ def handler_for(state):
                         state.idempotency[(user, key)] = item
                     return self.respond(201, item)
                 return self.respond(404, {"error": "not found"})
+
     return Handler
 
 
 def openapi():
-    return {"openapi": "3.0.3", "info": {"title": "Autotest fixture", "version": "1"}, "paths": {
-        "/health": {"get": {"responses": {"200": {"description": "ready", "content": {"application/json": {
-            "schema": {"type": "object", "required": ["ready"], "properties": {"ready": {"type": "boolean"}}}}}}}}}}}
+    return {
+        "openapi": "3.0.3",
+        "info": {"title": "Autotest fixture", "version": "1"},
+        "paths": {
+            "/health": {
+                "get": {
+                    "responses": {
+                        "200": {
+                            "description": "ready",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "required": ["ready"],
+                                        "properties": {"ready": {"type": "boolean"}},
+                                    }
+                                }
+                            },
+                        }
+                    }
+                }
+            }
+        },
+    }
 
 
 @contextmanager

@@ -1,6 +1,7 @@
 """Targets are explicit origins; redirects do not expand authority."""
 
 from urllib.parse import urlsplit
+
 from .config import origin
 from .errors import Blocked
 

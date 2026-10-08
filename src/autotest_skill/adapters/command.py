@@ -7,6 +7,7 @@ import tempfile
 import time
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
 from ..artifacts import safe_file, write_json
 from ..errors import Blocked
 
@@ -28,7 +29,14 @@ def parse_junit(path, started):
     if len(data) > 5_000_000 or b"<!DOCTYPE" in data.upper() or b"<!ENTITY" in data.upper():
         raise ValueError("Unsafe or oversized JUnit output")
     root = ET.fromstring(data)
-    counts = {"passed": 0, "failed": 0, "error": 0, "skipped": 0, "expected_failure": 0, "disabled": 0}
+    counts = {
+        "passed": 0,
+        "failed": 0,
+        "error": 0,
+        "skipped": 0,
+        "expected_failure": 0,
+        "disabled": 0,
+    }
     for case in root.iter("testcase"):
         if case.find("failure") is not None:
             counts["failed"] += 1
@@ -55,8 +63,13 @@ def run(check, context):
     started = time.time()
     with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
         try:
-            process = subprocess.Popen(argv, cwd=context.root, stdout=stdout, stderr=stderr,
-                                       start_new_session=os.name == "posix")
+            process = subprocess.Popen(
+                argv,
+                cwd=context.root,
+                stdout=stdout,
+                stderr=stderr,
+                start_new_session=os.name == "posix",
+            )
         except FileNotFoundError as exc:
             raise Blocked("Required command executable is unavailable") from exc
         try:
@@ -84,8 +97,23 @@ def run(check, context):
             elif counts["failed"] or counts["error"]:
                 status, reason = "failed", "Repository tests failed"
     artifact = f"{check.id}.command.json"
-    write_json(context.folder, artifact, {"exit_code": process.returncode, "stdout": output,
-               "stderr": error_output, "test_counts": counts}, context.redactor)
-    return context.result(check, status, expected={"exit_code": spec.expected_exit},
-                          actual={"exit_code": process.returncode}, test_counts=counts,
-                          reason=reason, evidence=[artifact])
+    write_json(
+        context.folder,
+        artifact,
+        {
+            "exit_code": process.returncode,
+            "stdout": output,
+            "stderr": error_output,
+            "test_counts": counts,
+        },
+        context.redactor,
+    )
+    return context.result(
+        check,
+        status,
+        expected={"exit_code": spec.expected_exit},
+        actual={"exit_code": process.returncode},
+        test_counts=counts,
+        reason=reason,
+        evidence=[artifact],
+    )

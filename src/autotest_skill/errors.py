@@ -1,5 +1,6 @@
 """Errors whose meaning must survive reporting."""
 
+
 class Blocked(RuntimeError):
     """A required runtime prerequisite is unavailable."""
 

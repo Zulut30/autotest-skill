@@ -1,17 +1,31 @@
 import copy
+
 import pytest
 from pydantic import ValidationError
+
 from autotest_skill.config import Config
 
-BASE = {"project": "test", "allowed_origins": ["http://127.0.0.1:8765"], "checks": [{
-    "id": "health", "kind": "http", "requirement": "readiness", "oracle": "Service returns its ready state",
-    "spec": {"base_url": "http://127.0.0.1:8765", "path": "/health"}}]}
+BASE = {
+    "project": "test",
+    "allowed_origins": ["http://127.0.0.1:8765"],
+    "checks": [
+        {
+            "id": "health",
+            "kind": "http",
+            "requirement": "readiness",
+            "oracle": "Service returns its ready state",
+            "spec": {"base_url": "http://127.0.0.1:8765", "path": "/health"},
+        }
+    ],
+}
 
 
 def test_unknown_options_and_targets_are_rejected():
-    for mutate in (lambda c: c.update(unknown=True),
-                   lambda c: c["checks"][0]["spec"].update(base_url="https://other.example"),
-                   lambda c: c["checks"][0]["spec"].update(path="//other.example")):
+    for mutate in (
+        lambda c: c.update(unknown=True),
+        lambda c: c["checks"][0]["spec"].update(base_url="https://other.example"),
+        lambda c: c["checks"][0]["spec"].update(path="//other.example"),
+    ):
         config = copy.deepcopy(BASE)
         mutate(config)
         with pytest.raises(ValidationError):

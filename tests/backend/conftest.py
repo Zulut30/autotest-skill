@@ -1,5 +1,6 @@
 import httpx
 import pytest
+
 from autotest_skill.demo import start_demo
 
 
@@ -10,6 +11,6 @@ def api():
 
 
 def sign_in(client, user="alice"):
-    response = client.post('/api/login', json={'username': user, 'password': 'demo-password'})
+    response = client.post("/api/login", json={"username": user, "password": "demo-password"})
     assert response.status_code == 200
-    return {'Authorization': response.json()['authorization']}
+    return {"Authorization": response.json()["authorization"]}

@@ -1,6 +1,8 @@
 import json
 import os
+
 import pytest
+
 from autotest_skill.artifacts import create_run, safe_file, write_json
 from autotest_skill.secrets import Redactor
 

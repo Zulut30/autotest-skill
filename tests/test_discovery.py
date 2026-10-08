@@ -1,4 +1,5 @@
 import json
+
 from autotest_skill.discovery import discover
 
 

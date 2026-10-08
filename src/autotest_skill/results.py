@@ -2,7 +2,9 @@
 
 from collections import Counter
 from typing import Any, Literal
+
 from pydantic import Field
+
 from .config import StrictModel
 
 Status = Literal["passed", "failed", "blocked", "skipped", "error", "observation"]

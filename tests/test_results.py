@@ -2,10 +2,18 @@ from autotest_skill.results import CheckResult, RunReport
 
 
 def report(*statuses):
-    return RunReport(run_id="run", project="test", profile="smoke", tool_version="test",
-                     started_at="now", config_digest="test", results=[
-        CheckResult(id=str(i), kind="http", status=s, oracle="expected", requirement="test")
-        for i, s in enumerate(statuses)])
+    return RunReport(
+        run_id="run",
+        project="test",
+        profile="smoke",
+        tool_version="test",
+        started_at="now",
+        config_digest="test",
+        results=[
+            CheckResult(id=str(i), kind="http", status=s, oracle="expected", requirement="test")
+            for i, s in enumerate(statuses)
+        ],
+    )
 
 
 def test_partial_or_zero_checks_do_not_become_green():

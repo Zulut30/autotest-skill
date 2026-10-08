@@ -3,9 +3,10 @@
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from .errors import BudgetExceeded
 from .results import CheckResult
 from .secrets import Redactor
-from .errors import BudgetExceeded
 
 
 @dataclass
@@ -33,5 +34,13 @@ class Context:
         self.counters[resource] += amount
 
     def result(self, check, status, **details):
-        return CheckResult(id=check.id, kind=check.kind, status=status, oracle=check.oracle,
-                           requirement=check.requirement, severity=check.severity, impact=check.impact, **details)
+        return CheckResult(
+            id=check.id,
+            kind=check.kind,
+            status=status,
+            oracle=check.oracle,
+            requirement=check.requirement,
+            severity=check.severity,
+            impact=check.impact,
+            **details,
+        )
