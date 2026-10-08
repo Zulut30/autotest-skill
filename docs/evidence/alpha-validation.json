@@ -1,0 +1,46 @@
+{
+  "scope": "Alpha developer validation; full release gates remain open",
+  "target_parent_revision": "82b9faac2ced9663b9902e1be9902ac020e88aed",
+  "target_dirty": true,
+  "portable_suite": {
+    "tests": 114,
+    "passed": 102,
+    "skipped": 12,
+    "failures": 0,
+    "errors": 0
+  },
+  "native_scope": "Native suites and three-target demo pairs executed separately; reference API26 x86 only",
+  "cold_runner_restart": "Owned emulator stopped; stale locks safely cleared; boot and real native title assertion passed",
+  "distribution": {
+    "version": "0.1.0a1",
+    "status": "alpha",
+    "license": "MIT",
+    "archive_checks": "passed",
+    "artifacts": [
+      {
+        "file": "autotest_agent_skill-0.1.0a1-py3-none-any.whl",
+        "sha256": "42f03bf56028b6c477fe64b0f00358f3fa861d85b1d9b358228f4cc97afbbdd6",
+        "bytes": 400337
+      },
+      {
+        "file": "autotest_agent_skill-0.1.0a1.tar.gz",
+        "sha256": "a16e0164c59e50f9d564f4d4c98fdf557d612433ddca4a7ac4b253fb57c2ae47",
+        "bytes": 521298
+      }
+    ],
+    "excluded": [
+      "Local caches",
+      "Credentials",
+      "Android signing key",
+      "Private runs"
+    ]
+  },
+  "full_release_ready": false,
+  "open_stages": [
+    59,
+    60,
+    98,
+    99,
+    100
+  ]
+}

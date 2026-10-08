@@ -38,14 +38,32 @@ target=android-26
 AVD
 fi
 if ! adb -s emulator-5554 get-state >/dev/null 2>&1; then
+ # A restored filesystem can contain lock files without any emulator process.
+ .venv/bin/python - <<'PY'
+import os
+from pathlib import Path
+for process in Path('/proc').iterdir():
+ if not process.name.isdigit():continue
+ try:arguments=(process/'cmdline').read_bytes().split(b'\0')
+ except FileNotFoundError:continue
+ except OSError:raise SystemExit('Cannot prove the AVD is inactive; inspect processes before clearing stale locks.')
+ if arguments and b'qemu-system' in arguments[0] and b'autotest-api26' in arguments:
+  raise SystemExit('Owned AVD is running but ADB is unavailable; inspect its log instead of starting a duplicate.')
+root=Path(os.environ['ANDROID_AVD_HOME'])/'autotest-api26.avd'
+for name in ('multiinstance.lock','hardware-qemu.ini.lock'):(root/name).unlink(missing_ok=True)
+PY
  acceleration=off
  [ ! -r /dev/kvm ] || acceleration=auto
  nohup emulator -avd autotest-api26 -port 5554 -accel "$acceleration" -gpu swiftshader -no-window -no-audio -no-boot-anim -no-snapshot -no-metrics -memory 1536 -cores 2 -netfast > .autotest/native-logs/emulator.log 2>&1 &
  echo "$!" > .autotest/native-logs/emulator.pid
+ export AUTOTEST_EMULATOR_STARTED_PID="$!"
 fi
 .venv/bin/python - <<'PY'
-import subprocess,time
+import os,subprocess,time
+from pathlib import Path
 for attempt in range(120):
+ started=os.environ.get('AUTOTEST_EMULATOR_STARTED_PID')
+ if started and not Path(f'/proc/{started}/cmdline').exists():raise SystemExit('Owned emulator exited before boot; inspect .autotest/native-logs/emulator.log')
  try:
   r=subprocess.run(['adb','-s','emulator-5554','shell','getprop','sys.boot_completed'],capture_output=True,text=True,timeout=5,check=False)
   if r.returncode==0 and r.stdout.strip()=='1':break

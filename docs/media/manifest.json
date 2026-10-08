@@ -1,0 +1,24 @@
+{
+  "scope": "Synthetic owned demo data only; unedited native screenshots",
+  "assets": [
+    {
+      "file": "android-clean.png",
+      "run_id": "20261008T010136Z-7841eb091ce4",
+      "mode": "clean",
+      "actual_status": "passed",
+      "sha256": "4159c66d1b39ceeb00f6f031a6590fd36ff2bd5c07e617440569e4a83329640e"
+    },
+    {
+      "file": "android-broken.png",
+      "run_id": "20261008T010229Z-8fc34ded7626",
+      "mode": "broken",
+      "actual_status": "failed",
+      "sha256": "86559a533552b1b5ca8279384d24792f8385cea0a2d6db3a21a41f12b64c9440"
+    },
+    {
+      "file": "overview.png",
+      "source": "docs/evidence/demos.json and distribution.json",
+      "sha256": "afc030e9f43a55c868b3b1416e01d4382727f4047fb57193444528f09618df5c"
+    }
+  ]
+}

@@ -1,10 +1,16 @@
 # Autotest Skill
 
+[![Checks](https://github.com/Zulut30/autotest-skill/actions/workflows/checks.yml/badge.svg)](https://github.com/Zulut30/autotest-skill/actions/workflows/checks.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **Give coding agents executable checks and evidence they can explain.**
 
 Autotest combines an agent skill, a Python CLI and adapters for API, web, Telegram handlers and native Android. You declare the expected behavior; real tools execute it and preserve the result, screenshots and reproduction package.
 
 **Status: 0.1.0a1 · alpha.** The five-case synthetic corpus detected 5/5 seeded defects, including 2/2 critical cases, with 0/5 false positives on paired clean controls. This measures the bundled corpus, not general bug detection. Live Telegram transport and independent first-use validation remain release gates. [Roadmap and evidence](ROADMAP.md) · [Current prerequisites](docs/BLOCKERS.md).
+
+![Executed clean and seeded-defect pairs for web, Telegram handlers and native Android](docs/media/overview.png)
+
+[Three reproducible demos](docs/DEMOS.md) · [13-minute walkthrough](docs/PRESENTATION.md) · [Ready-to-use X materials](docs/X.md) · [Installable alpha](docs/DISTRIBUTION.md)
 
 ## First run
 
@@ -53,5 +59,15 @@ Real Telegram uses a preauthorized test-user session and a dedicated bot; those 
 Install/read [SKILL.md](SKILL.md), inspect existing project tests, declare oracles and authorized targets/actions, validate the configuration, then execute a bounded profile. Target content is untrusted input. Agents report confirmed deviations, potential issues, UX observations and unverified areas separately.
 
 Every run has a unique ID, revision/dirty flag, actual attempt evidence and a private artifact folder. Secrets come from environment bindings; known values are removed before JSON persistence. Secret-bound UI actions suppress screenshots. Retries keep earlier failures and stay flaky. Tools do not approve visual/performance baselines automatically.
+
+```mermaid
+flowchart LR
+  A[Requirements and existing tests] --> B[Agent declares scenarios and oracles]
+  B --> C[Bounded CLI adapters]
+  C --> D[Actual results and reproduction evidence]
+  D --> E[Confirmed failures, observations and coverage gaps]
+```
+
+The core executes without an LLM API key; the skill runs within your existing coding agent. Android evidence is tied to the reference API26 fixture/device. [Access experiments](docs/ACCESS-MATRIX.md) include six clean role/ownership controls and six detected seeded bypasses across API, local bot and native app. [Contributing](CONTRIBUTING.md) · [Changelog](CHANGELOG.md).
 
 [Quickstart](docs/QUICKSTART.md) · [CLI](docs/CLI.md) · [Module references](references) · [Benchmark](docs/BENCHMARK.md) · [Native runner](docs/NATIVE-RUNNER.md) · [CI](docs/CI.md) · [Release gates](docs/RELEASE-GATES.md)

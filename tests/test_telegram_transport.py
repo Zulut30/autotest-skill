@@ -14,7 +14,7 @@ def test_real_dispatcher_consumes_events_with_recorded_api_calls():
         for identifier, text in enumerate(("/new", "Widget"), start=1):
             await dispatcher.feed_update(bot, update_event(bot, identifier, text=text))
         await dispatcher.feed_update(bot, update_event(bot, 3, callback="confirm"))
-        assert dispatcher["items"] == [{"user_id": 501, "chat_id": 501, "name": "Widget"}]
+        assert dispatcher["items"] == [{"id": 1, "user_id": 501, "chat_id": 501, "name": "Widget"}]
         assert any(call["text"] == "Saved item: Widget" for call in session.calls)
         assert any(
             call["method"] == "answerCallbackQuery" and call["text"] == "Saved"
