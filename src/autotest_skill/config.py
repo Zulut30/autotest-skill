@@ -177,6 +177,11 @@ class TelegramEvent(StrictModel):
     update_id: int | None = Field(default=None, ge=1)
 
 
+class TelegramReply(StrictModel):
+    chat_id: int
+    text: str = Field(max_length=1000)
+
+
 class TelegramSpec(StrictModel):
     mode: Literal["local", "live"] = "local"
     scenario: Literal[
@@ -186,10 +191,19 @@ class TelegramSpec(StrictModel):
     factory: str = "autotest_skill.telegram_demo:create_dispatcher"
     events: list[TelegramEvent] = Field(default_factory=list, max_length=100)
     expected_messages: list[str] = Field(default_factory=list)
+    expected_replies: list[TelegramReply] = Field(default_factory=list, max_length=100)
     defects: bool = False
     serve_fixture: bool = False
     expected_text: str | None = None
     timeout: float = Field(default=20, gt=0, le=120)
+
+    @model_validator(mode="after")
+    def reply_scope(self):
+        if self.mode == "live" and self.expected_replies:
+            raise ValueError(
+                "Live multi-chat reply assertions are unsupported; use the declared live scenario"
+            )
+        return self
 
 
 class AndroidAction(StrictModel):
@@ -398,7 +412,9 @@ class Config(StrictModel):
                 check.kind == "telegram"
                 and spec.factory != "autotest_skill.telegram_demo:create_dispatcher"
                 and (
-                    not self.allow_project_commands or not spec.events or not spec.expected_messages
+                    not self.allow_project_commands
+                    or not spec.events
+                    or not (spec.expected_messages or spec.expected_replies)
                 )
             ):
                 raise ValueError(

@@ -100,7 +100,9 @@ async def local(check, context):
         expected = (
             spec.expected_messages
             or {
-                "start": [
+                "start": []
+                if spec.expected_replies
+                else [
                     "Welcome. Use /new to add an item.",
                     "Commands: /start /new /cancel /admin",
                     "Unknown command. Use /help.",
@@ -115,6 +117,15 @@ async def local(check, context):
             }[spec.scenario]
         )
         matches = all(text in texts for text in expected)
+        matches = matches and all(
+            any(
+                call.get("chat_id") == reply.chat_id
+                and call["text"] == reply.text
+                and call["method"] in {"sendMessage", "editMessageText"}
+                for call in session.calls
+            )
+            for reply in spec.expected_replies
+        )
         if spec.expected_text is not None:
             matches = matches and any(spec.expected_text in text for text in texts)
         if spec.factory == BUILTIN:
@@ -153,7 +164,10 @@ async def local(check, context):
         return context.result(
             check,
             "passed" if matches else "failed",
-            expected={"messages": expected},
+            expected={
+                "messages": expected,
+                "replies": [reply.model_dump() for reply in spec.expected_replies],
+            },
             actual=actual,
             reason=""
             if matches

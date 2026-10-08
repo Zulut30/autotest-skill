@@ -1,0 +1,306 @@
+{
+  "scope": "Owned API and local aiogram handler pairs; live Telegram unvalidated",
+  "rows": [
+    {
+      "target": "http",
+      "guard": "role",
+      "mode": "clean",
+      "status": "passed",
+      "run_id": "20261008T005533Z-d21eaa602cb3",
+      "actual": {
+        "status": 403,
+        "json": {
+          "allowed": false
+        },
+        "headers": {}
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005533Z-d21eaa602cb3"
+    },
+    {
+      "target": "http",
+      "guard": "role",
+      "mode": "broken",
+      "status": "failed",
+      "run_id": "20261008T005533Z-59e27964eedb",
+      "actual": {
+        "status": 200,
+        "json": {
+          "allowed": true
+        },
+        "headers": {}
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005533Z-59e27964eedb"
+    },
+    {
+      "target": "http",
+      "guard": "ownership",
+      "mode": "clean",
+      "status": "passed",
+      "run_id": "20261008T005534Z-4e75ad321031",
+      "actual": {
+        "status": 403,
+        "json": {
+          "error": "forbidden"
+        },
+        "headers": {}
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005534Z-4e75ad321031"
+    },
+    {
+      "target": "http",
+      "guard": "ownership",
+      "mode": "broken",
+      "status": "failed",
+      "run_id": "20261008T005534Z-6948618fd7eb",
+      "actual": {
+        "status": 200,
+        "json": {
+          "id": 2,
+          "owner": "bob",
+          "name": "Bob item",
+          "quantity": 1
+        },
+        "headers": {}
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005534Z-6948618fd7eb"
+    },
+    {
+      "target": "telegram",
+      "guard": "role",
+      "mode": "clean",
+      "status": "passed",
+      "run_id": "20261008T005535Z-017dfbed194a",
+      "actual": {
+        "mode": "local_recording_transport",
+        "calls": [
+          {
+            "method": "sendMessage",
+            "text": "Admin denied",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Admin allowed",
+            "chat_id": 9001,
+            "buttons": []
+          }
+        ],
+        "states": {
+          "user_a": null,
+          "user_b": null,
+          "other_chat": null
+        },
+        "items": [],
+        "events_executed": 2,
+        "live_telegram_validated": false,
+        "delivery_entrypoint": "feed_update"
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005535Z-017dfbed194a"
+    },
+    {
+      "target": "telegram",
+      "guard": "role",
+      "mode": "broken",
+      "status": "failed",
+      "run_id": "20261008T005537Z-7b18095a9967",
+      "actual": {
+        "mode": "local_recording_transport",
+        "calls": [
+          {
+            "method": "sendMessage",
+            "text": "Admin allowed",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Admin allowed",
+            "chat_id": 9001,
+            "buttons": []
+          }
+        ],
+        "states": {
+          "user_a": null,
+          "user_b": null,
+          "other_chat": null
+        },
+        "items": [],
+        "events_executed": 2,
+        "live_telegram_validated": false,
+        "delivery_entrypoint": "feed_update"
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005537Z-7b18095a9967"
+    },
+    {
+      "target": "telegram",
+      "guard": "ownership",
+      "mode": "clean",
+      "status": "passed",
+      "run_id": "20261008T005538Z-383e4640cc09",
+      "actual": {
+        "mode": "local_recording_transport",
+        "calls": [
+          {
+            "method": "sendMessage",
+            "text": "Enter item name.",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Confirm item: Widget",
+            "chat_id": 501,
+            "buttons": [
+              {
+                "text": "Confirm",
+                "data": "confirm"
+              },
+              {
+                "text": "Cancel",
+                "data": "cancel"
+              }
+            ]
+          },
+          {
+            "method": "answerCallbackQuery",
+            "text": "Saved",
+            "callback_id": "callback-3"
+          },
+          {
+            "method": "sendMessage",
+            "text": "Saved item: Widget",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item denied",
+            "chat_id": 502,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item denied",
+            "chat_id": -100501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item: Widget",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item: Widget",
+            "chat_id": 9001,
+            "buttons": []
+          }
+        ],
+        "states": {
+          "user_a": null,
+          "user_b": null,
+          "other_chat": null
+        },
+        "items": [
+          {
+            "id": 1,
+            "user_id": 501,
+            "chat_id": 501,
+            "name": "Widget"
+          }
+        ],
+        "events_executed": 7,
+        "live_telegram_validated": false,
+        "delivery_entrypoint": "feed_update"
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005538Z-383e4640cc09"
+    },
+    {
+      "target": "telegram",
+      "guard": "ownership",
+      "mode": "broken",
+      "status": "failed",
+      "run_id": "20261008T005538Z-d44bcae60b21",
+      "actual": {
+        "mode": "local_recording_transport",
+        "calls": [
+          {
+            "method": "sendMessage",
+            "text": "Enter item name.",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Confirm item: Widget",
+            "chat_id": 501,
+            "buttons": [
+              {
+                "text": "Confirm",
+                "data": "confirm"
+              },
+              {
+                "text": "Cancel",
+                "data": "cancel"
+              }
+            ]
+          },
+          {
+            "method": "answerCallbackQuery",
+            "text": "Saved",
+            "callback_id": "callback-3"
+          },
+          {
+            "method": "sendMessage",
+            "text": "Saved item: Widget",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item: Widget",
+            "chat_id": 502,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item: Widget",
+            "chat_id": -100501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item: Widget",
+            "chat_id": 501,
+            "buttons": []
+          },
+          {
+            "method": "sendMessage",
+            "text": "Item: Widget",
+            "chat_id": 9001,
+            "buttons": []
+          }
+        ],
+        "states": {
+          "user_a": null,
+          "user_b": null,
+          "other_chat": null
+        },
+        "items": [
+          {
+            "id": 1,
+            "user_id": 501,
+            "chat_id": 501,
+            "name": "Widget"
+          }
+        ],
+        "events_executed": 7,
+        "live_telegram_validated": false,
+        "delivery_entrypoint": "feed_update"
+      },
+      "directory": "/workspace/autotest-skill/.autotest/access-runs/20261008T005538Z-d44bcae60b21"
+    }
+  ]
+}

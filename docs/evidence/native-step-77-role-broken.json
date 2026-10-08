@@ -1,0 +1,27 @@
+{
+  "run_id": "20261008T005649Z-cc6883c4023f",
+  "target_revision": "0f6ed9fa96166b092b53ed3a8915f16c81f1448d",
+  "target_dirty": true,
+  "status": "failed",
+  "expected_status": "failed",
+  "actual": {
+    "device": "emulator-5554",
+    "request_budget_scope": "Explicit Appium operations; downstream protocol frames are not counted.",
+    "apk_sha256": "aa9d8e9ebf894fff0c42383fef8047a40d299d26c9635597ad70baa224da5424",
+    "platform_version": "8.0.0",
+    "last_action": 7,
+    "assertions": [
+      {
+        "locator": "Status",
+        "expected": "Signed in as alice",
+        "observed": "Signed in as alice"
+      },
+      {
+        "locator": "Status",
+        "expected": "Admin denied",
+        "observed": "Admin allowed"
+      }
+    ]
+  },
+  "directory": "/workspace/autotest-skill/.autotest/native-runs/20261008T005649Z-cc6883c4023f"
+}

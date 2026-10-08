@@ -65,7 +65,28 @@ def create_dispatcher(defects=False):
 
     @router.message(Command("admin"))
     async def admin(message):
-        await message.answer("Admin allowed" if message.from_user.id == 9001 else "Admin denied")
+        await message.answer(
+            "Admin allowed" if message.from_user.id == 9001 or defects else "Admin denied"
+        )
+
+    @router.message(Command("item"))
+    async def item(message, items: list):
+        try:
+            identifier = int(message.text.split(maxsplit=1)[1])
+        except (ValueError, IndexError):
+            await message.answer("Item ID required")
+            return
+        found = next((item for item in items if item["id"] == identifier), None)
+        if found is None:
+            await message.answer("Item not found")
+        elif (
+            not defects
+            and message.from_user.id != 9001
+            and (found["user_id"] != message.from_user.id or found["chat_id"] != message.chat.id)
+        ):
+            await message.answer("Item denied")
+        else:
+            await message.answer("Item: " + found["name"])
 
     @router.message(Command("cancel"))
     async def cancel(message, state: FSMContext):
@@ -107,6 +128,7 @@ def create_dispatcher(defects=False):
         values = await state.get_data()
         items.append(
             {
+                "id": len(items) + 1,
                 "user_id": query.from_user.id,
                 "chat_id": query.message.chat.id,
                 "name": values["name"],

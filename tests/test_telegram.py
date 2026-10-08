@@ -78,6 +78,20 @@ def test_duplicate_delivery_has_one_effect(tmp_path):
     assert report.results[0].actual["delivery_entrypoint"] == "feed_webhook_update"
 
 
+def test_reply_text_without_correct_recipient_does_not_pass(tmp_path):
+    report, _ = run_config(
+        bot_config(
+            events=[{"text": "/admin"}],
+            expected_messages=["Admin denied"],
+            expected_replies=[{"chat_id": 999, "text": "Admin denied"}],
+        ),
+        tmp_path,
+        tmp_path / "runs",
+    )
+    assert report.results[0].status == "failed"
+    assert report.results[0].actual["calls"][0]["chat_id"] == 501
+
+
 def test_real_webhook_http_ingress_authenticates_and_deduplicates():
     import httpx
 

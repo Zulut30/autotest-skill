@@ -43,6 +43,7 @@ public class MainActivity extends Activity {
             Intent intent=new Intent(this,ItemsActivity.class); startActivity(intent);
         });
         button(layout,"Check admin access",() -> admin());
+        button(layout,"Inspect foreign item",() -> foreignItem());
         button(layout,"Sign out",() -> logout());
         button(layout,"Request microphone",() -> requestPermissions(new String[]{Manifest.permission.RECORD_AUDIO},7));
         status=new TextView(this);status.setContentDescription("Status");status.setTextSize(17);layout.addView(status);
@@ -110,6 +111,14 @@ public class MainActivity extends Activity {
         new Thread(() -> {
             try {request(address,"/api/logout","POST",new JSONObject(),auth);show("Signed out");}
             catch(Exception error){show("Signed out locally; server logout failed.");}
+        }).start();
+    }
+    void foreignItem() {
+        final String address=base.getText().toString(),auth=preferences.getString("authorization",null);
+        new Thread(() -> {
+            try {JSONObject result=request(address,"/api/items/2","GET",null,auth);show("Foreign item accessible: "+result.getString("name"));}
+            catch(HttpFailure error){show(error.code==403?"Foreign item denied":error.code==401?"Please sign in":"Item unavailable");}
+            catch(Exception error){show("Item unavailable");}
         }).start();
     }
     static class HttpFailure extends IOException {

@@ -100,9 +100,8 @@ def handler_for(state):
                 if not user:
                     return self.respond(401, {"error": "unauthorized"})
                 if path == "/api/admin":
-                    return self.respond(
-                        200 if user == "admin" else 403, {"allowed": user == "admin"}
-                    )
+                    allowed = user == "admin" or state.defects
+                    return self.respond(200 if allowed else 403, {"allowed": allowed})
                 if path == "/api/me":
                     return self.respond(
                         200, {"username": user, "role": "admin" if user == "admin" else "user"}
