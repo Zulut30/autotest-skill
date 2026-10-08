@@ -1,0 +1,67 @@
+{
+  "url": "https://github.com/Zulut30/autotest-skill/actions/runs/37707524759",
+  "head_sha": "a7b163fa80b019a389a3c105e83b15a06b5d9cf6",
+  "trigger": "push",
+  "jobs": [
+    {
+      "conclusion": "success",
+      "id": 113085486288,
+      "status": "completed",
+      "steps": [
+        {
+          "conclusion": "success",
+          "name": "Set up job"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install pinned tooling and project"
+        },
+        {
+          "conclusion": "success",
+          "name": "Install official Chromium"
+        },
+        {
+          "conclusion": "success",
+          "name": "Lint and format"
+        },
+        {
+          "conclusion": "success",
+          "name": "Execute tests"
+        },
+        {
+          "conclusion": "success",
+          "name": "Verify paired defect benchmark"
+        },
+        {
+          "conclusion": "success",
+          "name": "Build distributions"
+        },
+        {
+          "conclusion": "success",
+          "name": "Retain synthetic demonstration evidence"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065"
+        },
+        {
+          "conclusion": "success",
+          "name": "Post Run actions/checkout@11d5960a326750d5838078e36cf38b85af677262"
+        },
+        {
+          "conclusion": "success",
+          "name": "Complete job"
+        }
+      ]
+    }
+  ],
+  "pull_request_trigger": "Configured in the same workflow; this evidence records an actual main push run."
+}
