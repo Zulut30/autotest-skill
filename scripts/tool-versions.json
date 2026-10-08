@@ -1,0 +1,17 @@
+{
+  "android_command_line_tools": {
+    "version": "23.0",
+    "filename": "commandlinetools-linux-16111833_latest.zip",
+    "sha256": "0877a1d048fe4a24efe2eff536ca4223f7adeb58648bb81909d33c446918cfa8"
+  },
+  "go": {
+    "version": "go1.27.1",
+    "filename": "go1.27.1.linux-amd64.tar.gz",
+    "sha256": "63d339f0da5ab53635a56f2490a7984dfe12dfcff22ad749f63edaf590168445"
+  },
+  "appium": "3.1.0",
+  "uiautomator2": "8.7.0",
+  "k6": "v1.0.0",
+  "gitleaks": "v8.24.3",
+  "semgrep": "1.180.0"
+}
