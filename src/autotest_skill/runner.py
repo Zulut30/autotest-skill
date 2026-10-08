@@ -28,6 +28,9 @@ def run_config(config, root, output, profile="smoke", changed_files=(), config_d
     report = RunReport(run_id=identifier, project=config.project, profile=profile,
                        tool_version=__version__, started_at=now(), config_digest=config_digest,
                        target_revision=revision.stdout.strip() if revision.returncode == 0 else None)
+    if report.target_revision:
+        dirty=subprocess.run(['git','status','--porcelain'],cwd=root,capture_output=True,text=True,timeout=5)
+        report.target_dirty=bool(dirty.stdout.strip()) if dirty.returncode==0 else None
     checks = select(config, profile, changed_files)
     selected_ids = {check.id for check in checks}
     completed = {}
@@ -80,6 +83,8 @@ def run_config(config, root, output, profile="smoke", changed_files=(), config_d
         write_json(folder, "result.json", report.model_dump(), context.redactor)
         write_json(folder, "summary.json", {"counts": report.counts(), "exit_code": report.exit_code(),
                    "budget_used": context.counters}, context.redactor)
+        from .reproduction import collect
+        collect(config,report,Path(root),folder,context.redactor)
     return report, folder
 
 

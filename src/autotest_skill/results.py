@@ -34,6 +34,7 @@ class RunReport(StrictModel):
     started_at: str
     finished_at: str | None = None
     target_revision: str | None = None
+    target_dirty: bool | None = None
     config_digest: str
     results: list[CheckResult] = Field(default_factory=list)
     interrupted: bool = False

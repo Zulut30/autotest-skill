@@ -145,6 +145,18 @@
       "default": null,
       "title": "Target Revision"
     },
+    "target_dirty": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Dirty"
+    },
     "config_digest": {
       "title": "Config Digest",
       "type": "string"
