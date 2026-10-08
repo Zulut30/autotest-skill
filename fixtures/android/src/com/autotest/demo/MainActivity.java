@@ -84,6 +84,8 @@ public class MainActivity extends Activity {
         show("Saving");
         new Thread(() -> {
             try {
+                int delay=getIntent().getIntExtra("transport_delay_ms",0);
+                if(delay>0)Thread.sleep(Math.min(delay,10000));
                 if(!defects)request(address,"/api/items","POST",new JSONObject().put("name",item).put("quantity",count),preferences.getString("authorization",null));
                 preferences.edit().putString("base",address).apply();
                 show("Saved");

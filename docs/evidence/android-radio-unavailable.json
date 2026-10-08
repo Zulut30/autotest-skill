@@ -1,0 +1,16 @@
+{
+  "run_id": "20261008T004619Z-189808e21329",
+  "status": "error",
+  "operation": "Appium mobile: setConnectivity; svc wifi disable returned code 137",
+  "initial_network": {
+    "wifi": true,
+    "data": true,
+    "airplaneMode": false
+  },
+  "restored_network": {
+    "wifi": true,
+    "data": true,
+    "airplaneMode": false
+  },
+  "scope": "Radio toggles unvalidated; application recovery uses a closed owned-host API port"
+}

@@ -8,4 +8,4 @@ Actions cover click, fill, text/visibility assertions, back navigation, backgrou
 
 Screenshots and logs support an agent's design/UX analysis. No complete native accessibility certification is claimed. Android is the first supported native platform; iOS and desktop remain unsupported.
 
-Cloud runner: Android 11/API 30 x86_64, emulator 37.2.12.0, software acceleration, Appium 3.1.0 and UiAutomator2 8.7.0. Exact installed metadata and startup steps are recorded after runner validation. The emulator, ADB and Appium are processes that must restart in a new task.
+Validated cloud runner: Android 8.0/API26 default x86, emulator 37.2.12.0, software acceleration, Appium 3.1.0 and UiAutomator2 8.7.0. API30 attempts were blocked by system ANRs/install timeouts. Exact metadata and startup steps are in [NATIVE-RUNNER.md](NATIVE-RUNNER.md). The emulator, ADB and Appium are processes that must restart in a new task.

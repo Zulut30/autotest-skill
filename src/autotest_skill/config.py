@@ -194,6 +194,7 @@ class TelegramSpec(StrictModel):
 
 class AndroidAction(StrictModel):
     enabled: bool | None = None
+    orientation: Literal["PORTRAIT", "LANDSCAPE"] | None = None
     value_env: str | None = None
     action: Literal[
         "click",
@@ -207,6 +208,9 @@ class AndroidAction(StrictModel):
         "set_network",
         "scroll_to",
         "hide_keyboard",
+        "rotate",
+        "expect_keyboard",
+        "expect_not_occluded",
     ]
     accessibility_id: str | None = None
     resource_id: str | None = None
@@ -216,14 +220,24 @@ class AndroidAction(StrictModel):
     @model_validator(mode="after")
     def locator_contract(self):
         if (
-            self.action in {"click", "fill", "expect_text", "expect_visible", "scroll_to"}
+            self.action
+            in {
+                "click",
+                "fill",
+                "expect_text",
+                "expect_visible",
+                "scroll_to",
+                "expect_not_occluded",
+            }
             and sum(bool(x) for x in (self.accessibility_id, self.resource_id, self.text)) != 1
         ):
             raise ValueError("Native actions need exactly one semantic locator")
         if self.value is not None and self.value_env is not None:
             raise ValueError("Use one native value source")
-        if self.action == "set_network" and self.enabled is None:
-            raise ValueError("Network actions require an explicit enabled value")
+        if self.action in {"set_network", "expect_keyboard"} and self.enabled is None:
+            raise ValueError("Network/keyboard actions require an explicit enabled value")
+        if self.action == "rotate" and self.orientation is None:
+            raise ValueError("Rotation requires an explicit orientation")
         return self
 
 
@@ -233,6 +247,8 @@ class AndroidSpec(StrictModel):
     udid: str = Field(pattern=r"^[A-Za-z0-9_.:-]{1,128}$")
     reset: bool = False
     reuse_runtime: bool = False
+    fixture_defects: bool | None = None
+    fixture_delay_ms: int = Field(default=0, ge=0, le=10000)
     package: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$")
     activity: str = Field(pattern=r"^[.A-Za-z][.A-Za-z0-9_$]*$")
     actions: list[AndroidAction] = Field(default_factory=list)
@@ -241,6 +257,14 @@ class AndroidSpec(StrictModel):
     wait_timeout: float = Field(default=15, gt=0, le=60)
     baseline: str | None = None
     visual_threshold: float = Field(default=0.01, ge=0, le=1)
+
+    @model_validator(mode="after")
+    def fixture_controls(self):
+        if (
+            self.fixture_defects is not None or self.fixture_delay_ms
+        ) and self.package != "com.autotest.demo":
+            raise ValueError("Fixture controls only apply to the bundled test application")
+        return self
 
 
 class PerformanceSpec(StrictModel):
@@ -346,18 +370,28 @@ class Config(StrictModel):
                 if (
                     spec.apk
                     or spec.reset
+                    or spec.fixture_defects is not None
+                    or spec.fixture_delay_ms
                     or any(
                         a.action
-                        in {"click", "fill", "back", "background", "restart", "set_network"}
+                        in {
+                            "click",
+                            "fill",
+                            "back",
+                            "background",
+                            "restart",
+                            "set_network",
+                            "rotate",
+                        }
                         for a in spec.actions
                     )
                 ) and not check.mutating:
                     raise ValueError("Native state changes must declare mutation")
                 if (
-                    any(a.action == "set_network" for a in spec.actions)
+                    any(a.action in {"set_network", "rotate"} for a in spec.actions)
                     and not self.allow_device_controls
                 ):
-                    raise ValueError("Device network controls require separate authorization")
+                    raise ValueError("Device controls require separate authorization")
             if check.kind == "telegram" and spec.mode == "live" and not check.mutating:
                 raise ValueError("Live Telegram conversations must declare mutation")
             if (

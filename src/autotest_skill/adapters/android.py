@@ -60,6 +60,14 @@ def run(check, context):
     if spec.reuse_runtime:
         capabilities["appium:skipDeviceInitialization"] = True
         capabilities["appium:skipServerInstallation"] = True
+    if spec.fixture_defects is not None or spec.fixture_delay_ms:
+        arguments = []
+        if spec.fixture_defects is not None:
+            arguments.extend(["--ez", "defects", str(spec.fixture_defects).lower()])
+        if spec.fixture_delay_ms:
+            arguments.extend(["--ei", "transport_delay_ms", str(spec.fixture_delay_ms)])
+        capabilities["appium:optionalIntentArguments"] = " ".join(arguments)
+        capabilities["appium:forceAppLaunch"] = True
     if spec.apk:
         root = Path(context.root).resolve()
         apk = (root / spec.apk).resolve()
@@ -68,9 +76,13 @@ def run(check, context):
         capabilities["appium:app"] = str(apk)
         capabilities["appium:enforceAppInstall"] = True
     client = AppiumClientConfig(
-        remote_server_addr=spec.server_url, timeout=min(spec.timeout, context.remaining())
+        remote_server_addr=spec.server_url,
+        timeout=min(spec.timeout, context.remaining()),
+        init_args_for_pool_manager={"init_args_for_pool_manager": {"retries": 0}},
     )
     driver = None
+    original_network = None
+    original_orientation = None
     actual = {
         "device": spec.udid,
         "request_budget_scope": "Explicit Appium operations; downstream protocol frames are not counted.",
@@ -80,7 +92,9 @@ def run(check, context):
 
     def call(function, *args, **kwargs):
         context.consume("requests")
-        client.timeout = min(spec.timeout, context.remaining())
+        client.timeout = min(
+            spec.timeout if driver is None else spec.wait_timeout + 5, context.remaining()
+        )
         return function(*args, **kwargs)
 
     def locate(action):
@@ -129,6 +143,9 @@ def run(check, context):
             elif action.action == "set_network":
                 if action.enabled is None:
                     raise ValueError("Connectivity action requires enabled")
+                if original_network is None:
+                    original_network = call(driver.execute_script, "mobile: getConnectivity", {})
+                    actual["initial_network"] = original_network
                 call(
                     driver.execute_script,
                     "mobile: setConnectivity",
@@ -138,6 +155,27 @@ def run(check, context):
                         "airplaneMode": not action.enabled,
                     },
                 )
+                actual.setdefault("network_states", []).append(
+                    call(driver.execute_script, "mobile: getConnectivity", {})
+                )
+            elif action.action == "rotate":
+                if original_orientation is None:
+                    original_orientation = call(lambda: driver.orientation)
+                call(setattr, driver, "orientation", action.orientation)
+                actual.setdefault("viewports", []).append(
+                    {
+                        "orientation": call(lambda: driver.orientation),
+                        **call(driver.get_window_size),
+                    }
+                )
+                assert actual["viewports"][-1]["orientation"] == action.orientation
+            elif action.action == "expect_keyboard":
+                WebDriverWait(
+                    driver, min(spec.wait_timeout, context.remaining()), poll_frequency=0.25
+                ).until(lambda _, enabled=action.enabled: call(driver.is_keyboard_shown) == enabled)
+                observed = call(driver.is_keyboard_shown)
+                actual.setdefault("keyboard_states", []).append(observed)
+                assert observed == action.enabled
             elif action.action == "hide_keyboard":
                 if call(driver.is_keyboard_shown):
                     call(driver.hide_keyboard)
@@ -176,17 +214,40 @@ def run(check, context):
                     call(element.clear)
                     call(element.send_keys, value or "")
                 elif action.action == "expect_text" and value is not None:
+                    assertion = {
+                        "locator": action.accessibility_id or action.resource_id or action.text,
+                        "expected": value,
+                        "observed": None,
+                    }
+                    actual.setdefault("assertions", []).append(assertion)
+
+                    def matching(_, element=element, value=value, assertion=assertion):
+                        assertion["observed"] = call(lambda: element.text)
+                        return assertion["observed"] == value
+
                     WebDriverWait(
                         driver, min(spec.wait_timeout, context.remaining()), poll_frequency=0.25
-                    ).until(
-                        lambda _, element=element, value=value: call(lambda: element.text) == value
+                    ).until(matching)
+                elif action.action == "expect_not_occluded":
+                    if not call(driver.is_keyboard_shown):
+                        raise Blocked("Keyboard is not open; occlusion was not evaluated")
+                    content = call(driver.find_element, AppiumBy.ID, "android:id/content")
+                    bounds, content_bounds = (
+                        call(lambda element=element: element.rect),
+                        call(lambda content=content: content.rect),
                     )
-                    actual.setdefault("assertions", []).append(
-                        {
-                            "locator": action.accessibility_id or action.resource_id or action.text,
-                            "expected": value,
-                            "observed": call(lambda element=element: element.text),
-                        }
+                    actual.setdefault("keyboard_occlusion", []).append(
+                        {"element": bounds, "content": content_bounds}
+                    )
+                    assert bounds["y"] >= content_bounds["y"]
+                    assert (
+                        bounds["y"] + bounds["height"]
+                        <= content_bounds["y"] + content_bounds["height"]
+                    )
+                    assert bounds["x"] >= content_bounds["x"]
+                    assert (
+                        bounds["x"] + bounds["width"]
+                        <= content_bounds["x"] + content_bounds["width"]
                     )
         actual["package"] = call(lambda: driver.current_package)
         actual["viewport"] = call(driver.get_window_size)
@@ -231,6 +292,36 @@ def run(check, context):
                 evidence.append(image)
             except (WebDriverException, ReadTimeoutError, ConnectTimeoutError, OSError, Blocked):
                 actual["screenshot_unavailable"] = True
+
+            def restore_network():
+                driver.execute_script("mobile: setConnectivity", original_network)
+                restored = driver.execute_script("mobile: getConnectivity", {})
+                actual["restored_network"] = restored
+                if restored != original_network:
+                    raise WebDriverException("Connectivity restoration did not match")
+
+            def restore_orientation():
+                driver.orientation = original_orientation
+                actual["restored_orientation"] = driver.orientation
+                if actual["restored_orientation"] != original_orientation:
+                    raise WebDriverException("Orientation restoration did not match")
+
+            restorations = []
+            if original_network is not None:
+                restorations.append(("network", restore_network))
+            if original_orientation is not None:
+                restorations.append(("orientation", restore_orientation))
+            for scope, restore in restorations:
+                try:
+                    client.timeout = 10
+                    restore()
+                except (WebDriverException, ReadTimeoutError, ConnectTimeoutError, OSError):
+                    actual[scope + "_cleanup_error"] = True
+                    status, reason = (
+                        "error",
+                        "Device controls could not be restored; inspect the isolated runner",
+                    )
+            client.timeout = 5
             try:
                 driver.quit()
             except (WebDriverException, ReadTimeoutError, ConnectTimeoutError, OSError, Blocked):
