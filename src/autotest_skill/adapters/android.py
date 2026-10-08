@@ -7,6 +7,7 @@ import httpx
 from ..artifacts import safe_file,write_json
 from ..errors import Blocked
 from ..policy import require_url
+from urllib3.exceptions import ReadTimeoutError,ConnectTimeoutError
 
 
 def run(check,context):
@@ -28,6 +29,7 @@ def run(check,context):
     capabilities={'platformName':'Android','appium:automationName':'UiAutomator2','appium:udid':spec.udid,
         'appium:deviceName':spec.device_name,'appium:appPackage':spec.package,'appium:appActivity':spec.activity,
         'appium:noReset':not spec.reset,'appium:newCommandTimeout':max(10,int(spec.timeout)),
+        'appium:androidInstallTimeout':int(min(spec.timeout,context.remaining())*1000),
         'appium:adbExecTimeout':int(min(spec.timeout,context.remaining())*1000),
         'appium:uiautomator2ServerLaunchTimeout':int(min(spec.timeout,context.remaining())*1000),
         'appium:disableWindowAnimation':True,'appium:settings[waitForIdleTimeout]':0,
@@ -73,6 +75,11 @@ def run(check,context):
             elif action.action=='set_network':
                 if action.enabled is None:raise ValueError('Connectivity action requires enabled')
                 call(driver.execute_script,'mobile: setConnectivity',{'wifi':action.enabled,'data':action.enabled,'airplaneMode':not action.enabled})
+            elif action.action=='hide_keyboard':
+                if call(driver.is_keyboard_shown):call(driver.hide_keyboard)
+            elif action.action=='scroll_to':
+                selector='new UiSelector().description('+json.dumps(action.accessibility_id)+')' if action.accessibility_id else ('new UiSelector().text('+json.dumps(action.text)+')' if action.text else 'new UiSelector().resourceId('+json.dumps(action.resource_id)+')')
+                call(driver.find_element,AppiumBy.ANDROID_UIAUTOMATOR,'new UiScrollable(new UiSelector().scrollable(true)).scrollIntoView('+selector+')')
             elif action.action=='screenshot':pass
             else:
                 element=locate(action)
@@ -87,6 +94,8 @@ def run(check,context):
         status,reason='blocked',context.redactor.text(str(exc))
     except (AssertionError,TimeoutException,NoSuchElementException) as exc:
         status,reason='failed',f'Native UI oracle was not satisfied ({type(exc).__name__})'
+    except (ReadTimeoutError,ConnectTimeoutError) as exc:
+        status,reason="blocked","Appium transport exceeded its bounded timeout"
     except WebDriverException as exc:
         status,reason='blocked' if driver is None else 'error',f'Native runner operation did not complete ({type(exc).__name__})'
     finally:
@@ -94,6 +103,8 @@ def run(check,context):
             client.timeout=5
             image=f'{check.id}.png'
             try:
+                if any(a.value_env for a in spec.actions):
+                    raise Blocked('Screenshot withheld because secret-bound actions were used')
                 driver.save_screenshot(str(safe_file(context.folder,image)))
                 os.chmod(safe_file(context.folder,image),0o600);evidence.append(image)
             except Exception:actual['screenshot_unavailable']=True

@@ -61,8 +61,12 @@ def run(check, context):
         except Exception as exc:
             raise Blocked("Chromium is unavailable; install a Playwright browser or set AUTOTEST_BROWSER_PATH") from exc
         session = browser.new_context(viewport={"width": spec.viewport[0], "height": spec.viewport[1]},
-                                      service_workers="block", locale="en-US", color_scheme="light", device_scale_factor=1)
+                                      service_workers="block", accept_downloads=False, locale="en-US", color_scheme="light", device_scale_factor=1)
         session.route("**/*", route_request)
+        def deny_socket(socket):
+            denied.append("WebSocket transport is outside the supported HTTP request policy")
+            socket.close(code=1008,reason="Unsupported transport")
+        session.route_web_socket("**/*",deny_socket)
         page = session.new_page()
         page.on("pageerror", lambda error: errors.append(context.redactor.text(str(error))))
         page.on("response", on_response)
@@ -147,6 +151,8 @@ def run(check, context):
                            "browser_version": browser.version, "viewport": spec.viewport})
             image = f"{check.id}.png"
             try:
+                if any(a.value_env for a in spec.actions):
+                    raise Blocked("Screenshot withheld because secret-bound actions were used")
                 path = safe_file(context.folder, image)
                 page.screenshot(path=str(path), mask=[page.locator('input[type="password"], [data-autotest-sensitive]')], timeout=3000)
                 os.chmod(path, 0o600)

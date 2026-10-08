@@ -64,6 +64,7 @@ def run(check, context):
         from ..contracts import response_errors
         contract_errors = response_errors(context.root, spec.openapi_file, spec.path, spec.method, status_code, payload)
         matches = matches and not contract_errors
+    pending = {}
     if matches:
         for name, path in spec.capture.items():
             try:
@@ -71,8 +72,9 @@ def run(check, context):
             except (KeyError, IndexError, TypeError, ValueError):
                 matches = False
                 break
-            context.variables[name] = value
+            pending[name] = value
             context.redactor.add(value)
+    if matches:context.variables.update(pending)
     actual = {"status": status_code, "json": payload} if payload is not None else {"status": status_code, "text": text[:20000]}
     actual["headers"] = {key:observed_headers.get(key.lower()) for key in spec.expected_headers}
     expected = {"headers":spec.expected_headers,"status": spec.expected_status, "json": spec.expected_json, "text": spec.expected_text}

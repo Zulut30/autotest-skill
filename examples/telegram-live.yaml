@@ -1,10 +1,12 @@
 version: 1
+allow_mutations: true
 project: dedicated-live-telegram-demo
 project_root: ..
 budgets: {seconds: 90}
 checks:
   - id: telegram.live-dialog
     kind: telegram
+    mutating: true
     mutating: true
     requirement: TG-DIALOG through genuine Telegram client
     oracle: A real test user completes name entry and confirms exactly the expected saved reply.

@@ -4,7 +4,7 @@ import os
 import re
 from .errors import Blocked
 
-SENSITIVE = re.compile(r"password|passwd|token|secret|authorization|cookie|api.?key|api.?hash|session", re.I)
+SENSITIVE = re.compile(r"password|passwd|token|secret|authorization|cookie|api.?key|api.?hash|session|jwt|credential", re.I)
 
 
 class Redactor:
@@ -25,6 +25,7 @@ class Redactor:
                 text = text.replace(secret, "[REDACTED]")
             else:
                 text = re.sub(r"(?<!\w)" + re.escape(secret) + r"(?!\w)", "[REDACTED]", text)
+        text = re.sub(r"(?i)([?&](?:password|token|secret|session|api[_-]?key|jwt|credential)=)[^&#\s]+",r"\1[REDACTED]",text)
         return re.sub(r"(?i)(bearer\s+)[a-z0-9._~+/=-]+", r"\1[REDACTED]", text)
 
     def clean(self, value):

@@ -1,10 +1,11 @@
 """Strict, secret-free execution configuration."""
 
 import json
+import ipaddress
 import re
 from pathlib import Path
 from typing import Any, Literal
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit,parse_qsl
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -14,12 +15,24 @@ class StrictModel(BaseModel):
 
 
 def origin(value: str) -> str:
+    if any(ord(c)<32 or ord(c)==127 for c in value):
+        raise ValueError("URL controls are forbidden")
     parsed = urlsplit(value)
     if parsed.scheme not in {"http", "https"} or not parsed.hostname:
         raise ValueError("Only HTTP(S) origins are supported")
     if parsed.username or parsed.password or parsed.query or parsed.fragment or parsed.path not in {"", "/"}:
         raise ValueError("An origin cannot contain credentials, paths, queries or fragments")
     host = parsed.hostname.lower().encode("idna").decode("ascii")
+    if host in {"metadata.google.internal","metadata.aws.internal","100.100.100.200","168.63.129.16","fd00:ec2::254"}:
+        raise ValueError("Cloud metadata targets are forbidden")
+    try:
+        address=ipaddress.ip_address(host)
+        if address.is_link_local or (getattr(address,"ipv4_mapped",None) and address.ipv4_mapped.is_link_local):
+            raise ValueError("Link-local metadata targets are forbidden")
+    except ValueError as exc:
+        if 'forbidden' in str(exc):raise
+        if not re.fullmatch(r"[a-z0-9](?:[a-z0-9.-]*[a-z0-9])?",host) or '..' in host or re.fullmatch(r"[0-9.]+",host):
+            raise ValueError("Invalid or ambiguous host")
     if ":" in host:
         host = f"[{host}]"
     port = parsed.port
@@ -107,6 +120,8 @@ class WebSpec(StrictModel):
 
     @model_validator(mode="after")
     def viewport_bounds(self):
+        if (self.max_navigation_ms is not None or self.max_action_ms is not None) and not self.measure_performance:
+            raise ValueError("Timing thresholds require measurement")
         if not 240 <= self.viewport[0] <= 3840 or not 240 <= self.viewport[1] <= 2160:
             raise ValueError("Viewport is outside supported resource limits")
         return self
@@ -137,21 +152,30 @@ class TelegramSpec(StrictModel):
 class AndroidAction(StrictModel):
     enabled: bool | None = None
     value_env: str | None = None
-    action: Literal["click", "fill", "expect_text", "expect_visible", "back", "background", "screenshot", "restart", "set_network"]
+    action: Literal["click", "fill", "expect_text", "expect_visible", "back", "background", "screenshot", "restart", "set_network", "scroll_to", "hide_keyboard"]
     accessibility_id: str | None = None
     resource_id: str | None = None
     text: str | None = None
     value: str | None = None
 
 
+    @model_validator(mode="after")
+    def locator_contract(self):
+        if self.action in {"click","fill","expect_text","expect_visible","scroll_to"} and sum(bool(x) for x in (self.accessibility_id,self.resource_id,self.text))!=1:
+            raise ValueError("Native actions need exactly one semantic locator")
+        if self.value is not None and self.value_env is not None:raise ValueError("Use one native value source")
+        if self.action=='set_network' and self.enabled is None:raise ValueError("Network actions require an explicit enabled value")
+        return self
+
+
 class AndroidSpec(StrictModel):
     server_url: str = "http://127.0.0.1:4723"
     apk: str | None = None
-    udid: str = Field(min_length=1)
+    udid: str = Field(pattern=r"^[A-Za-z0-9_.:-]{1,128}$")
     reset: bool = True
     reuse_runtime: bool = False
-    package: str
-    activity: str
+    package: str = Field(pattern=r"^[A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)+$")
+    activity: str = Field(pattern=r"^[.A-Za-z][.A-Za-z0-9_$]*$")
     actions: list[AndroidAction] = Field(default_factory=list)
     timeout: float = Field(default=30, gt=0, le=300)
     device_name: str = "Android"
@@ -212,6 +236,7 @@ class Config(StrictModel):
     allowed_origins: list[str] = Field(default_factory=list)
     allow_mutations: bool = False
     allow_project_commands: bool = False
+    allow_device_controls: bool = False
     budgets: Budgets = Field(default_factory=Budgets)
     checks: list[Check] = Field(min_length=1, max_length=1000)
 
@@ -231,6 +256,15 @@ class Config(StrictModel):
                 raise ValueError("Mutating HTTP methods must be declared")
             if check.kind == "web" and any(a.action in {"fill", "click", "double_click", "press"} and not a.safe_read_only for a in spec.actions) and not check.mutating:
                 raise ValueError("Interactive browser actions must declare mutation or read-only intent")
+            if check.kind=='android':
+                if not any(a.action in {'expect_text','expect_visible'} for a in spec.actions):
+                    raise ValueError("Native checks need a semantic assertion")
+                if (spec.apk or any(a.action in {'click','fill','back','background','restart','set_network'} for a in spec.actions)) and not check.mutating:
+                    raise ValueError("Native state changes must declare mutation")
+                if any(a.action=='set_network' for a in spec.actions) and not self.allow_device_controls:
+                    raise ValueError("Device network controls require separate authorization")
+            if check.kind=='telegram' and spec.mode=='live' and not check.mutating:
+                raise ValueError("Live Telegram conversations must declare mutation")
             if check.kind == "telegram" and spec.factory != "autotest_skill.telegram_demo:create_dispatcher":
                 if not self.allow_project_commands or not spec.events or not spec.expected_messages:
                     raise ValueError("Custom bot imports require command permission, events and expected replies")
@@ -241,6 +275,16 @@ class Config(StrictModel):
             path = getattr(spec, "path", None)
             if check.kind in {"http", "web", "performance"} and (not path.startswith("/") or path.startswith("//") or "\\" in path):
                 raise ValueError("Request paths must be relative to the configured origin")
+            for candidate in [path,*[a.path for a in getattr(spec,'actions',[]) if getattr(a,'path',None)]]:
+                if candidate and (any(ord(c)<32 or ord(c)==127 for c in candidate) or any(re.search(r"password|token|secret|session|api.?key|jwt|credential",key,re.I) for key,_ in parse_qsl(urlsplit(candidate).query))):
+                    raise ValueError("Secrets and control characters cannot be placed in URL paths")
+            for field in ('apk','baseline','openapi_file'):
+                candidate=getattr(spec,field,None)
+                if candidate and (Path(candidate).is_absolute() or '..' in Path(candidate).parts):
+                    raise ValueError("Input file paths must remain under the project root")
+            for action in getattr(spec,'actions',[]):
+                if getattr(action,'value_env',None) and not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*",action.value_env):
+                    raise ValueError("Invalid action environment binding")
             if check.kind == "http" and any(key.lower() in {"authorization", "cookie", "proxy-authorization"} for key in spec.headers):
                 raise ValueError("Credential headers must use environment bindings or captures")
             for field in ("headers_env", "json_env"):
