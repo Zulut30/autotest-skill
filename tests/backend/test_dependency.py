@@ -1,4 +1,4 @@
-from conftest import sign_in
+from tests.backend.conftest import sign_in
 
 
 def test_dependency_failure_is_honest_and_recoverable(api):

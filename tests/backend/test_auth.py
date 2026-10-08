@@ -1,4 +1,4 @@
-from conftest import sign_in
+from tests.backend.conftest import sign_in
 
 
 def test_login_failure_logout_and_revoked_session(api):

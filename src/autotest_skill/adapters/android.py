@@ -97,7 +97,7 @@ def run(check, context):
             return elements[0] if elements and call(elements[0].is_displayed) else False
 
         return WebDriverWait(
-            driver, min(spec.timeout, context.remaining()), poll_frequency=0.25
+            driver, min(spec.wait_timeout, context.remaining()), poll_frequency=0.25
         ).until(found)
 
     try:

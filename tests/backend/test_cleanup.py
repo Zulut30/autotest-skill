@@ -1,4 +1,4 @@
-from conftest import sign_in
+from tests.backend.conftest import sign_in
 
 
 def test_explicit_reset_makes_repeated_flows_independent(api):

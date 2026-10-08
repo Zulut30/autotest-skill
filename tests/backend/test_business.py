@@ -1,4 +1,4 @@
-from conftest import sign_in
+from tests.backend.conftest import sign_in
 
 
 def test_create_reopen_and_list_preserve_domain_data(api):

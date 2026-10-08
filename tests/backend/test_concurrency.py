@@ -1,6 +1,6 @@
 from concurrent.futures import ThreadPoolExecutor
 
-from conftest import sign_in
+from tests.backend.conftest import sign_in
 
 
 def test_concurrent_duplicates_create_one_item_and_conflicts_are_rejected(api):

@@ -238,6 +238,7 @@ class AndroidSpec(StrictModel):
     actions: list[AndroidAction] = Field(default_factory=list)
     timeout: float = Field(default=30, gt=0, le=300)
     device_name: str = "Android"
+    wait_timeout: float = Field(default=15, gt=0, le=60)
     baseline: str | None = None
     visual_threshold: float = Field(default=0.01, ge=0, le=1)
 
